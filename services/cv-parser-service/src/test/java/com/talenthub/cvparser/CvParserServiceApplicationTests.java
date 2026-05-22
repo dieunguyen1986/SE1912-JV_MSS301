@@ -1,10 +1,10 @@
-package com.talenthub.web;
+package com.talenthub.cvparser;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CommonWebApplicationTests {
+class CvParserServiceApplicationTests {
 
     @Test
     void contextLoads() {

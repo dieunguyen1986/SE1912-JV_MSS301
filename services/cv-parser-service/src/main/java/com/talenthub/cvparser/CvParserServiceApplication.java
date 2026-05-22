@@ -1,13 +1,13 @@
-package com.talenthub.web;
+package com.talenthub.cvparser;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CommonWebApplication {
+public class CvParserServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CommonWebApplication.class, args);
+        SpringApplication.run(CvParserServiceApplication.class, args);
     }
 
 }

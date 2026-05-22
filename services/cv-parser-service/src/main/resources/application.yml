@@ -1,0 +1,10 @@
+server:
+  port: 8085
+spring:
+  application:
+    name: cv-parser-service
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info

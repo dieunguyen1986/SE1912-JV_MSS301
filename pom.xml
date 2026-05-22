@@ -18,6 +18,15 @@
         <lombook.version>1.18.46</lombook.version>
     </properties>
 
+    <modules>
+        <module>shared/common-web</module>
+        <module>services/job-service</module>
+        <module>services/candidate-service</module>
+        <module>services/application-service</module>
+        <module>services/notification-service</module>
+        <module>services/cv-parser-service</module>
+    </modules>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -38,10 +47,34 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombook.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <scope>provided</scope>
             </dependency>
+
+            <dependency>
+                <groupId>com.talenthub</groupId>
+                <artifactId>common-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+<!--            <dependency>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-validation-dependencies</artifactId>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>
