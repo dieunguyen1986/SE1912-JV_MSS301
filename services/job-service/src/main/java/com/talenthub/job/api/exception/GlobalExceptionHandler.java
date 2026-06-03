@@ -1,7 +1,7 @@
-package com.talenthub.candidate.api.exception;
+package com.talenthub.job.api.exception;
 
-import com.talenthub.candidate.domain.exception.CandidateNotFoundException;
-import com.talenthub.candidate.domain.exception.DuplicateEmailException;
+import com.talenthub.job.domain.exception.DuplicateJobException;
+import com.talenthub.job.domain.exception.JobNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,13 +20,13 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(DuplicateEmailException.class)
-    public ProblemDetail handleDuplicateEmail(DuplicateEmailException ex) {
+    @ExceptionHandler(DuplicateJobException.class)
+    public ProblemDetail handleDuplicate(DuplicateJobException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-    @ExceptionHandler(CandidateNotFoundException.class)
-    public ProblemDetail handleNotFound(CandidateNotFoundException ex) {
+    @ExceptionHandler(JobNotFoundException.class)
+    public ProblemDetail handleNotFound(JobNotFoundException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
@@ -61,12 +60,6 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         String msg = "Tham số '%s' không hợp lệ: %s".formatted(ex.getName(), ex.getValue());
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, msg);
-    }
-
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ProblemDetail handleUploadTooLarge(MaxUploadSizeExceededException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.PAYLOAD_TOO_LARGE,
-                "File upload vượt quá giới hạn cho phép");
     }
 
     @ExceptionHandler(Exception.class)

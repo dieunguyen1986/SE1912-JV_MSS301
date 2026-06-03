@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -15,18 +16,23 @@ public class JobRepositoryAdapter implements JobRepository {
     private final JobJpaRepository jobJpaRepository;
 
     @Override
-    public Job createJob(Job job) {
+    public Job save(Job job) {
         return jobJpaRepository.save(job);
     }
 
     @Override
-    public Page<Job> getJobs(Pageable pageable, String keyword) {
-        return jobJpaRepository.getJobs(pageable, keyword);
+    public Optional<Job> findById(UUID id) {
+        return jobJpaRepository.findById(id);
     }
 
     @Override
-    public UUID requestApprove(Job job) {
-        return jobJpaRepository.save(job).getId();
+    public Page<Job> search(String keyword, Pageable pageable) {
+        return jobJpaRepository.search(keyword, pageable);
+    }
+
+    @Override
+    public Page<Job> searchPublished(String keyword, Pageable pageable) {
+        return jobJpaRepository.searchPublished(keyword, pageable);
     }
 
     @Override

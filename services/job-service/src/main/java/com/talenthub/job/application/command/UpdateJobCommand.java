@@ -5,11 +5,11 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-public record DraftJobCommand(
+public record UpdateJobCommand(
+        UUID jobId,
         String title,
         String description,
         String location,
-        UUID departmentId,
         Set<String> requiredSkills,
         BigDecimal minSalary,
         BigDecimal maxSalary,

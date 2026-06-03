@@ -3,14 +3,17 @@ package com.talenthub.job.domain;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface JobRepository {
-    Job createJob(Job job);
+    Job save(Job job);
 
-    Page<Job> getJobs(Pageable pageable, String keyword);
+    Optional<Job> findById(UUID id);
 
-    UUID requestApprove(Job job);
+    Page<Job> search(String keyword, Pageable pageable);
+
+    Page<Job> searchPublished(String keyword, Pageable pageable);
 
     boolean existsByTitle(String title);
 }

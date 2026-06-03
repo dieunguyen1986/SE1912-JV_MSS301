@@ -8,13 +8,11 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.UUID;
 
-public record JobCreatedRequest(
+public record UpdateJobRequest(
         @NotBlank String title,
         String description,
         String location,
-        UUID departmentId,
         @NotEmpty Set<String> requiredSkills,
         @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal minSalary,
         @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal maxSalary,
