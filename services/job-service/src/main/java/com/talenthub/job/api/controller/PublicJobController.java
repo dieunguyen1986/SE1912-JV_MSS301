@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -30,8 +32,15 @@ public class PublicJobController {
     @GetMapping
     public PageResponse<JobResponse> listPublished(@RequestHeader(name = "X-Correlation-ID") String correlationId,
                                                    @RequestParam(name = "keyword", required = false) String keyword,
-                                                   @PageableDefault(size = 20) Pageable pageable) {
+                                                   @PageableDefault(size = 20) Pageable pageable,
+                                                   Authentication authentication
+    ) {
         log.info("Correlation ID {}", correlationId);
+        log.info("Keyword {}", keyword);
+        log.info("Page {}", pageable);
+        log.info("Page size {}", pageable.getPageSize());
+        log.info("Authentication {}", ((User) authentication.getDetails()).getUsername());
+
         Page<Job> page = listJobsUseCase.published(keyword, pageable);
         return PageResponse.of(page, JobResponse::from);
     }

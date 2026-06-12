@@ -11,8 +11,19 @@ spring:
               predicates:
                 - name: Path
                   args:
-                    Path: /api/v1/public/jobs/**
-#                - name: Header
+                    Path:
+                      - /api/v1/public/jobs/**
+                      - /api/v1/jobs/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 10  # token nạp lại mỗi giây
+                    redis-rate-limiter.burstCapacity: 20  # token tối đa
+                    redis-rate-limiter.requestedTokens: 1  # mỗi request tốn 1 token
+                    key-resolver: "#{@ipKeyResolver}"
+
+
+            #                - name: Header
 #                  args:
 #                    Header: X-Client-Type, Web
             - id: candidate-service
