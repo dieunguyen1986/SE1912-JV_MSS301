@@ -1,9 +1,9 @@
 package com.talenthub.candidate.application.usecase;
 
 import com.talenthub.candidate.application.command.UpdateContactCommand;
-import com.talenthub.candidate.domain.Candidate;
-import com.talenthub.candidate.domain.CandidateRepository;
-import com.talenthub.candidate.domain.ContactInfo;
+import com.talenthub.candidate.domain.model.Candidate;
+import com.talenthub.candidate.domain.repository.CandidateRepository;
+import com.talenthub.candidate.domain.model.ContactInfo;
 import com.talenthub.candidate.domain.exception.CandidateNotFoundException;
 import com.talenthub.candidate.domain.exception.DuplicateEmailException;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.talenthub.candidate.api.dto;
 
-import com.talenthub.candidate.domain.Education;
-import com.talenthub.candidate.domain.WorkExperience;
+import com.talenthub.candidate.domain.model.Education;
+import com.talenthub.candidate.domain.model.WorkExperience;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 

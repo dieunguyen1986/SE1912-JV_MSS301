@@ -3,6 +3,14 @@ server:
 spring:
   application:
     name: application-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/talenthub_application
+    username: dieunt
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update    # dev only, prod đổi qua Flyway
+    properties.hibernate.format_sql: true
 management:
   endpoints:
     web:

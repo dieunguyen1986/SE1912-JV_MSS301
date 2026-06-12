@@ -1,6 +1,6 @@
 package com.talenthub.candidate.infrastructure.persistence;
 
-import com.talenthub.candidate.domain.Candidate;
+import com.talenthub.candidate.domain.model.Candidate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

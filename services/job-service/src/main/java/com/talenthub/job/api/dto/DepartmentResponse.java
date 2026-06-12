@@ -1,6 +1,6 @@
 package com.talenthub.job.api.dto;
 
-import com.talenthub.job.domain.Department;
+import com.talenthub.job.domain.model.Department;
 
 import java.util.UUID;
 

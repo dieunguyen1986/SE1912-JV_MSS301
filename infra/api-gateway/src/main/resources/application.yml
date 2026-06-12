@@ -11,10 +11,10 @@ spring:
               predicates:
                 - name: Path
                   args:
-                    Path: /api/v1/jobs/**
-                - name: Header
-                  args:
-                    Header: X-Client-Type, Web
+                    Path: /api/v1/public/jobs/**
+#                - name: Header
+#                  args:
+#                    Header: X-Client-Type, Web
             - id: candidate-service
               uri: http://localhost:8082
               predicates:

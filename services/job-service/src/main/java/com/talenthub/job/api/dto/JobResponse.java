@@ -1,6 +1,6 @@
 package com.talenthub.job.api.dto;
 
-import com.talenthub.job.domain.Job;
+import com.talenthub.job.domain.model.Job;
 
 import java.math.BigDecimal;
 import java.time.Instant;

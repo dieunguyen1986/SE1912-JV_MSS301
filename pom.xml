@@ -75,6 +75,24 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <!-- Đăng ký Lombok làm annotation processor cho build Maven (CLI/CI/Docker).
+                 IntelliJ có plugin Lombok riêng nên không cần; nhưng `mvn compile`
+                 cần khai báo này, nếu không @Getter/@RequiredArgsConstructor sẽ không sinh code. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombook.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

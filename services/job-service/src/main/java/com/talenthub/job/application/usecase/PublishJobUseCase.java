@@ -1,7 +1,7 @@
 package com.talenthub.job.application.usecase;
 
-import com.talenthub.job.domain.Job;
-import com.talenthub.job.domain.JobRepository;
+import com.talenthub.job.domain.model.Job;
+import com.talenthub.job.domain.repository.JobRepository;
 import com.talenthub.job.domain.exception.JobNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

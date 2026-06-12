@@ -1,7 +1,7 @@
 package com.talenthub.candidate.api.dto;
 
-import com.talenthub.candidate.domain.Candidate;
-import com.talenthub.candidate.domain.ParsedCvData;
+import com.talenthub.candidate.domain.model.Candidate;
+import com.talenthub.candidate.domain.model.ParsedCvData;
 
 import java.time.Instant;
 import java.util.UUID;

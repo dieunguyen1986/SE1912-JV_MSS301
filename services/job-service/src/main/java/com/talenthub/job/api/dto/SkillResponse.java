@@ -1,6 +1,6 @@
 package com.talenthub.job.api.dto;
 
-import com.talenthub.job.domain.Skill;
+import com.talenthub.job.domain.model.Skill;
 
 import java.util.UUID;
 

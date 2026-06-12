@@ -1,7 +1,7 @@
 package com.talenthub.job.application.usecase;
 
-import com.talenthub.job.domain.Job;
-import com.talenthub.job.domain.JobRepository;
+import com.talenthub.job.domain.model.Job;
+import com.talenthub.job.domain.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
