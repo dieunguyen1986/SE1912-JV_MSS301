@@ -22,7 +22,7 @@ public class UserUtils {
                 .replaceAll("]$", "");
 
         return Arrays.stream(cleaned.split(","))
-                .map(r -> r.replace("\"", "").trim())
+                .map(r -> r.replace("\"", "").replace("'", "").trim())
                 .filter(StringUtils::hasText)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
