@@ -15,7 +15,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApplicationRepositoryAdapter implements ApplicationRepository {
     private final ApplicationJpaRepository appJpaRepository;
-
     @Override
     public Application save(Application application) {
         return appJpaRepository.save(application);
@@ -33,7 +32,6 @@ public class ApplicationRepositoryAdapter implements ApplicationRepository {
 
     @Override
     public Page<Application> search(UUID jobId, PipelineStage stage, Pageable pageable) {
-        return appJpaRepository.findAll(
-                ApplicationSpecifications.byJobAndStage(jobId, stage), pageable);
+        return null;
     }
 }

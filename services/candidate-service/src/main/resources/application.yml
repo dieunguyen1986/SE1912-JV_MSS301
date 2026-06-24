@@ -4,15 +4,52 @@ spring:
   application:
     name: candidate-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/talenthub_candidate
+    url: jdbc:postgresql://localhost:5432/talenthub_candidate_db
     username: dieunt
-    password: 
+    password:
   jpa:
     hibernate:
       ddl-auto: update    # dev only, prod đổi qua Flyway
     properties.hibernate.format_sql: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+    instance-id: ${spring.application.name}:${server.port}
 management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, gateway
+
+# Logback pattern
+logging:
+  # Nơi ghi file log
+  file:
+    name: logs/order-service.log
+
+  # Cấp độ log theo package
+  level:
+    root: INFO                    # Mặc định toàn bộ app
+    com.talenthub.candidate: DEBUG # Package của mình → thấy log "getById ... at port=" để quan sát load-balancing
+    org.springframework: WARN     # Framework → bớt noise
+    org.hibernate.SQL: DEBUG      # Xem câu SQL đang chạy (bỏ khi production)
+
+  # Cấu hình xoay file log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB       # File quá 10MB → tạo file mới
+      max-history: 30           # Giữ tối đa 30 file cũ
+      total-size-cap: 500MB     # Tổng dung lượng không vượt 500MB
+  # Format log in ra console và file
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId:-}] %logger{36} -%msg%n"
+#  pattern:
+#    console: "%d{HH:mm:ss} %-5level [${spring.application.name}] [%X{correlationId:-no-id}] %logger{25} - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss} %-5level [${spring.application.name}] [%X{correlationId:-no-id}] %logger{25} - %msg%n"

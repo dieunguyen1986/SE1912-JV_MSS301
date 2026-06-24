@@ -4,15 +4,53 @@ spring:
   application:
     name: application-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/talenthub_application
+    url: jdbc:postgresql://localhost:5432/talenthub_application_db
     username: dieunt
     password:
   jpa:
     hibernate:
       ddl-auto: update    # dev only, prod đổi qua Flyway
     properties.hibernate.format_sql: true
+  cloud:
+    openfeign:
+      client:
+        config:
+          default: # áp dụng cho tất cả client
+            connect-timeout: 2000
+            read-timeout: 3000
+          job-service:  # áp dụng riêng cho client tên này
+            connect-timeout: 1000
+            read-timeout: 2000
+          candidate-service:  # áp dụng riêng cho client tên này
+            connect-timeout: 1000
+            read-timeout: 2000
+      circuitbreaker:
+        enabled: true
+resilience4j:
+  circuitbreaker:
+    configs:
+      default: #CB bỏ qua exception nghiệp vụ (để 404 không làm mở circuit):
+        ignore-exceptions:
+          - com.talenthub.application.domain.exception.RemoteJobNotFoundException
+          - com.talenthub.application.domain.exception.JobNotOpenForApplicationException
+          - com.talenthub.application.domain.exception.RemoteCandidateNotFoundException
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true  #Dùng IP thay hostname — quan trọng trong Docker
+    lease-expiration-duration-in-seconds: 30 # Expiry sau 30s không có heartbeat
+    lease-renewal-interval-in-seconds: 10 # Heartbeat mỗi 10s (dev)
+    instance-id: ${spring.application.name}:${server.port}
 management:
   endpoints:
     web:
       exposure:
         include: health, info
+clients:
+  job-service:
+    url: http://localhost:8081
+  # candidate-service KHÔNG khai url -> dùng Eureka load-balancing (lb://candidate-service)

@@ -1,0 +1,61 @@
+2026-06-24T11:47:48.936+07:00  INFO 73163 --- [candidate-service] [main] c.t.c.CandidateServiceApplication        : Starting CandidateServiceApplication using Java 21.0.10 with PID 73163 (/Users/dieunt/Documents/FPTU/1_Training/SU26/SE1912-JV/Projects/talenthub_se1912/services/candidate-service/target/classes started by dieunt in /Users/dieunt/Documents/FPTU/1_Training/SU26/SE1912-JV/Projects/talenthub_se1912)
+2026-06-24T11:47:48.938+07:00 DEBUG 73163 --- [candidate-service] [main] c.t.c.CandidateServiceApplication        : Running with Spring Boot v3.5.14, Spring v6.2.18
+2026-06-24T11:47:48.938+07:00  INFO 73163 --- [candidate-service] [main] c.t.c.CandidateServiceApplication        : The following 1 profile is active: "dev"
+2026-06-24T11:47:49.527+07:00  INFO 73163 --- [candidate-service] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-24T11:47:49.527+07:00  INFO 73163 --- [candidate-service] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.54]
+2026-06-24T11:47:49.542+07:00  INFO 73163 --- [candidate-service] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-06-24T11:47:49.633+07:00  INFO 73163 --- [candidate-service] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-06-24T11:47:49.648+07:00  INFO 73163 --- [candidate-service] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.49.Final
+2026-06-24T11:47:49.657+07:00  INFO 73163 --- [candidate-service] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-06-24T11:47:49.740+07:00  INFO 73163 --- [candidate-service] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-24T11:47:49.777+07:00  INFO 73163 --- [candidate-service] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@470a446f
+2026-06-24T11:47:49.778+07:00  INFO 73163 --- [candidate-service] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-24T11:47:49.820+07:00  INFO 73163 --- [candidate-service] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.6
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-24T11:47:50.112+07:00  INFO 73163 --- [candidate-service] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-24T11:47:50.337+07:00  WARN 73163 --- [candidate-service] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-24T11:47:50.582+07:00  WARN 73163 --- [candidate-service] [main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-06-24T11:47:50.650+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-06-24T11:47:50.652+07:00  INFO 73163 --- [candidate-service] [main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-24T11:47:50.655+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-24T11:47:50.655+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-24T11:47:50.655+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-24T11:47:50.655+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-24T11:47:50.655+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-24T11:47:50.655+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-06-24T11:47:50.656+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-24T11:47:50.799+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-24T11:47:50.800+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 5
+2026-06-24T11:47:50.800+07:00  INFO 73163 --- [candidate-service] [main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-06-24T11:47:50.801+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1782276470801 with initial instances count: 0
+2026-06-24T11:47:50.803+07:00  INFO 73163 --- [candidate-service] [main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782276470803, current=UP, previous=STARTING]
+2026-06-24T11:47:50.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-InstanceInfoReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CANDIDATE-SERVICE/candidate-service:8082: registering service...
+2026-06-24T11:47:50.824+07:00  INFO 73163 --- [candidate-service] [main] c.t.c.CandidateServiceApplication        : Started CandidateServiceApplication in 2.086 seconds (process running for 2.351)
+2026-06-24T11:47:50.828+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-InstanceInfoReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CANDIDATE-SERVICE/candidate-service:8082 - registration status: 204
+2026-06-24T11:47:51.215+07:00  INFO 73163 --- [candidate-service] [RMI TCP Connection(4)-127.0.0.1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-24T11:48:20.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-24T11:48:20.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-24T11:48:20.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-24T11:48:20.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-24T11:48:20.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-24T11:48:20.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Application version is -1: false
+2026-06-24T11:48:20.804+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-24T11:48:20.820+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-CacheRefreshExecutor-%d] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-24T11:52:50.661+07:00  INFO 73163 --- [candidate-service] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-24T11:57:50.666+07:00  INFO 73163 --- [candidate-service] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-24T12:02:50.666+07:00  INFO 73163 --- [candidate-service] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-24T12:05:36.851+07:00  INFO 73163 --- [candidate-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782277536851, current=DOWN, previous=UP]
+2026-06-24T12:05:36.852+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-InstanceInfoReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CANDIDATE-SERVICE/candidate-service:8082: registering service...
+2026-06-24T12:05:36.855+07:00  INFO 73163 --- [candidate-service] [DiscoveryClient-InstanceInfoReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CANDIDATE-SERVICE/candidate-service:8082 - registration status: 204
+2026-06-24T12:05:36.861+07:00  INFO 73163 --- [candidate-service] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-24T12:05:36.862+07:00  INFO 73163 --- [candidate-service] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-24T12:05:36.862+07:00  INFO 73163 --- [candidate-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : Shutting down DiscoveryClient ...
+2026-06-24T12:05:39.868+07:00  INFO 73163 --- [candidate-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : Unregistering ...
+2026-06-24T12:05:39.875+07:00  INFO 73163 --- [candidate-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CANDIDATE-SERVICE/candidate-service:8082 - deregister  status: 200
+2026-06-24T12:05:39.875+07:00  INFO 73163 --- [candidate-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : Completed shut down of DiscoveryClient

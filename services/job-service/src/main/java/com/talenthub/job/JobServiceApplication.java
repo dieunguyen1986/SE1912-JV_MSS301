@@ -9,8 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import java.util.Optional;
 
 @SpringBootApplication
-@EnableJpaAuditing
-        //(auditorAwareRef = "auditorAware")
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class JobServiceApplication {
 
     public static void main(String[] args) {

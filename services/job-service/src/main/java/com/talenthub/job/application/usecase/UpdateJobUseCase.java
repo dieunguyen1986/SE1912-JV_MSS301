@@ -1,25 +1,32 @@
 package com.talenthub.job.application.usecase;
 
-import com.talenthub.job.application.command.UpdateJobCommand;
-import com.talenthub.job.domain.model.Job;
-import com.talenthub.job.domain.repository.JobRepository;
+import com.talenthub.job.application.command.JobCommand;
+import com.talenthub.job.domain.aggregate.JobAggregate;
 import com.talenthub.job.domain.exception.JobNotFoundException;
+import com.talenthub.job.domain.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UpdateJobUseCase {
+
     private final JobRepository jobRepository;
 
     @Transactional
-    public Job execute(UpdateJobCommand cmd) {
-        Job job = jobRepository.findById(cmd.jobId())
-                .orElseThrow(() -> new JobNotFoundException(cmd.jobId()));
-
-        job.updateDetails(cmd.title(), cmd.description(), cmd.location(),
-                cmd.minSalary(), cmd.maxSalary(), cmd.deadline(), cmd.requiredSkills());
-        return jobRepository.save(job);
+    public JobAggregate execute(UUID id, JobCommand command) {
+        JobAggregate aggregate = jobRepository.findById(id)
+                .orElseThrow(() -> new JobNotFoundException(id));
+        aggregate.update(
+                command.getTitle(),
+                command.getDescription(),
+                command.getDepartmentId(),
+                command.getMinSalary(),
+                command.getMaxSalary(),
+                command.getDeadline());
+        return jobRepository.save(aggregate);
     }
 }

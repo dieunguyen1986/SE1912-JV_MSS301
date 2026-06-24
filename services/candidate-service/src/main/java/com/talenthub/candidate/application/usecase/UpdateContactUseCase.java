@@ -2,7 +2,7 @@ package com.talenthub.candidate.application.usecase;
 
 import com.talenthub.candidate.application.command.UpdateContactCommand;
 import com.talenthub.candidate.domain.model.Candidate;
-import com.talenthub.candidate.domain.repository.CandidateRepository;
+import com.talenthub.candidate.domain.CandidateRepository;
 import com.talenthub.candidate.domain.model.ContactInfo;
 import com.talenthub.candidate.domain.exception.CandidateNotFoundException;
 import com.talenthub.candidate.domain.exception.DuplicateEmailException;
@@ -13,21 +13,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UpdateContactUseCase {
+
     private final CandidateRepository candidateRepository;
 
     @Transactional
-    public Candidate execute(UpdateContactCommand command) {
+    public void execute(UpdateContactCommand command) {
         Candidate candidate = candidateRepository.findById(command.candidateId())
                 .orElseThrow(() -> new CandidateNotFoundException(command.candidateId()));
 
-        String newEmail = command.email() == null ? null : command.email().trim().toLowerCase();
-        boolean emailChanged = newEmail != null
-                && (candidate.getContact() == null || !newEmail.equals(candidate.getContact().email()));
-        if (emailChanged && candidateRepository.existsByEmail(newEmail)) {
-            throw new DuplicateEmailException(newEmail);
+        ContactInfo newContact = new ContactInfo(command.email(), command.phone(), command.address());
+
+        boolean emailChanged = !candidate.getContact().email().equals(newContact.email());
+        if (emailChanged && candidateRepository.existsByEmail(newContact.email())) {
+            throw new DuplicateEmailException(newContact.email());
         }
 
-        candidate.updateContact(new ContactInfo(command.email(), command.phone(), command.address()));
-        return candidateRepository.save(candidate);
+        candidate.updateContact(newContact);
     }
 }

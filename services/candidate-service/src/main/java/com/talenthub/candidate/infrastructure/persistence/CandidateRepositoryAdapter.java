@@ -1,7 +1,7 @@
 package com.talenthub.candidate.infrastructure.persistence;
 
 import com.talenthub.candidate.domain.model.Candidate;
-import com.talenthub.candidate.domain.repository.CandidateRepository;
+import com.talenthub.candidate.domain.CandidateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,17 +26,13 @@ public class CandidateRepositoryAdapter implements CandidateRepository {
     }
 
     @Override
-    public Optional<Candidate> findByEmail(String email) {
-        return candidateJpaRepository.findByContactEmail(email == null ? null : email.trim().toLowerCase());
+    public Page<Candidate> findAll(Pageable pageable) {
+        return candidateJpaRepository.findAll(pageable);
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        return candidateJpaRepository.existsByContactEmail(email == null ? null : email.trim().toLowerCase());
-    }
-
-    @Override
-    public Page<Candidate> search(String keyword, Pageable pageable) {
-        return candidateJpaRepository.search(keyword, pageable);
+        if (email == null) return false;
+        return candidateJpaRepository.existsByContactEmail(email.trim().toLowerCase());
     }
 }

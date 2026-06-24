@@ -1,32 +1,11 @@
 package com.talenthub.job.infrastructure.persistence;
 
-import com.talenthub.job.domain.model.Job;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.talenthub.job.infrastructure.persistence.entity.Job;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.UUID;
 
-public interface JobJpaRepository extends JpaRepository<Job, UUID> {
-
-    @Query("""
-            SELECT j FROM Job j
-            WHERE (:keyword IS NULL OR :keyword = ''
-                   OR LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                   OR LOWER(j.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
-            """)
-    Page<Job> search(@Param("keyword") String keyword, Pageable pageable);
-
-    @Query("""
-            SELECT j FROM Job j
-            WHERE j.status = com.talenthub.job.domain.model.Job.Status.PUBLISHED
-              AND (:keyword IS NULL OR :keyword = ''
-                   OR LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                   OR LOWER(j.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
-            """)
-    Page<Job> searchPublished(@Param("keyword") String keyword, Pageable pageable);
-
-    boolean existsByTitle(String title);
+public interface JobJpaRepository extends JpaRepository<Job, UUID>, JpaSpecificationExecutor<Job> {
+    boolean existsByTitle(String jobTitle);
 }

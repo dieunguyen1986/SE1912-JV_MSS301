@@ -1,111 +1,105 @@
 package com.talenthub.job.api.controller;
 
-import com.talenthub.job.api.dto.JobCreatedRequest;
+import com.talenthub.job.api.dto.JobCreateRequest;
 import com.talenthub.job.api.dto.JobResponse;
+import com.talenthub.job.api.dto.JobUpdateRequest;
 import com.talenthub.job.api.dto.PageResponse;
-import com.talenthub.job.api.dto.UpdateJobRequest;
-import com.talenthub.job.application.command.DraftJobCommand;
-import com.talenthub.job.application.command.UpdateJobCommand;
-import com.talenthub.job.application.usecase.ApproveJobUseCase;
-import com.talenthub.job.application.usecase.CloseJobUseCase;
-import com.talenthub.job.application.usecase.DeleteJobUseCase;
-import com.talenthub.job.application.usecase.DraftJobUseCase;
-import com.talenthub.job.application.usecase.GetJobUseCase;
-import com.talenthub.job.application.usecase.ListJobsUseCase;
-import com.talenthub.job.application.usecase.PublishJobUseCase;
-import com.talenthub.job.application.usecase.SubmitJobUseCase;
-import com.talenthub.job.application.usecase.UpdateJobUseCase;
-import com.talenthub.job.domain.model.Job;
+import com.talenthub.job.application.command.JobCommand;
+import com.talenthub.job.application.usecase.*;
+import com.talenthub.job.domain.aggregate.JobAggregate;
+import com.talenthub.job.infrastructure.specification.JobSearchCriteria;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(ApiPath.JOBS)
+@RequestMapping("/api/v1/jobs")
 @RequiredArgsConstructor
+@Slf4j
 public class JobController {
 
-    private final DraftJobUseCase draftJobUseCase;
-    private final GetJobUseCase getJobUseCase;
-    private final ListJobsUseCase listJobsUseCase;
+    @Value("${server.port}")
+    private String serverPort;
+
+    private final CreateNewJobUseCase createNewJobUseCase;
+    private final GetJobByIdUseCase getJobByIdUseCase;
+    private final SearchJobsUseCase searchJobsUseCase;
     private final UpdateJobUseCase updateJobUseCase;
-    private final SubmitJobUseCase submitJobUseCase;
-    private final ApproveJobUseCase approveJobUseCase;
-    private final PublishJobUseCase publishJobUseCase;
-    private final CloseJobUseCase closeJobUseCase;
     private final DeleteJobUseCase deleteJobUseCase;
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_REC')")
-    public ResponseEntity<JobResponse> create(@Valid @RequestBody JobCreatedRequest req) {
-        Job job = draftJobUseCase.execute(new DraftJobCommand(
-                req.title(), req.description(), req.location(), req.departmentId(),
-                req.requiredSkills(), req.minSalary(), req.maxSalary(), req.deadline()));
-        return ResponseEntity
-                .created(URI.create(ApiPath.JOBS + "/" + job.getId()))
-                .body(JobResponse.from(job));
+    public ResponseEntity<JobResponse> create(@Valid @RequestBody JobCreateRequest request) {
+        UUID id = createNewJobUseCase.execute(toCommand(request));
+        JobAggregate job = getJobByIdUseCase.execute(id);
+        return ResponseEntity.created(URI.create("/api/v1/jobs/" + id)).body(JobResponse.from(job));
     }
 
-    @GetMapping(ApiPath.BY_ID)
-    public JobResponse getById(@PathVariable UUID id) {
-        return JobResponse.from(getJobUseCase.execute(id));
+    @GetMapping("/{id}")
+    public JobResponse getById(@PathVariable("id") UUID id, @RequestHeader("X-User-Email") String email) {
+
+        log.info("Job service instance with port: {}", serverPort);
+        log.info("User logged: {}", email);
+        return JobResponse.from(getJobByIdUseCase.execute(id));
     }
 
     @GetMapping
-    public PageResponse<JobResponse> list(
+    public PageResponse<JobResponse> search(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) JobAggregate.Status status,
+            @RequestParam(required = false) UUID departmentId,
+            @RequestParam(required = false) LocalDate deadlineFrom,
+            @RequestParam(required = false) LocalDate deadlineTo,
+            @RequestParam(required = false) BigDecimal minSalary,
+            @RequestParam(required = false) BigDecimal maxSalary,
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<Job> page = listJobsUseCase.all(keyword, pageable);
+        JobSearchCriteria criteria = JobSearchCriteria.builder()
+                .keyword(keyword)
+                .status(status)
+                .departmentId(departmentId)
+                .deadlineFrom(deadlineFrom)
+                .deadlineTo(deadlineTo)
+                .minSalary(minSalary)
+                .maxSalary(maxSalary)
+                .build();
+        Page<JobAggregate> page = searchJobsUseCase.execute(criteria, pageable);
         return PageResponse.of(page, JobResponse::from);
     }
 
-    @PutMapping(ApiPath.BY_ID)
-    public JobResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateJobRequest req) {
-        Job job = updateJobUseCase.execute(new UpdateJobCommand(
-                id, req.title(), req.description(), req.location(),
-                req.requiredSkills(), req.minSalary(), req.maxSalary(), req.deadline()));
-        return JobResponse.from(job);
+    @PutMapping("/{id}")
+    public JobResponse update(@PathVariable UUID id, @Valid @RequestBody JobUpdateRequest request) {
+        JobCommand command = new JobCommand(
+                request.getTitle(), request.getDescription(), request.getDepartmentId(),
+                null, request.getMinSalary(), request.getMaxSalary(), request.getDeadline());
+        return JobResponse.from(updateJobUseCase.execute(id, command));
     }
 
-    @PutMapping(ApiPath.SUBMIT)
-    public JobResponse submit(@PathVariable UUID id) {
-        return JobResponse.from(submitJobUseCase.execute(id));
-    }
 
-    @PutMapping(ApiPath.APPROVE)
-    public JobResponse approve(@PathVariable UUID id) {
-        return JobResponse.from(approveJobUseCase.execute(id));
-    }
-
-    @PutMapping(ApiPath.PUBLISH)
-    public JobResponse publish(@PathVariable UUID id) {
-        return JobResponse.from(publishJobUseCase.execute(id));
-    }
-
-    @PutMapping(ApiPath.CLOSE)
-    public JobResponse close(@PathVariable UUID id) {
-        return JobResponse.from(closeJobUseCase.execute(id));
-    }
-
-    @DeleteMapping(ApiPath.BY_ID)
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id) {
         deleteJobUseCase.execute(id);
-        return ResponseEntity.noContent().build();
+    }
+
+    private JobCommand toCommand(JobCreateRequest request) {
+        return new JobCommand(
+                request.getTitle(),
+                request.getDescription(),
+                request.getDepartmentId(),
+                request.getRequiredSkills(),
+                request.getMinSalary(),
+                request.getMaxSalary(),
+                request.getDeadline());
     }
 }

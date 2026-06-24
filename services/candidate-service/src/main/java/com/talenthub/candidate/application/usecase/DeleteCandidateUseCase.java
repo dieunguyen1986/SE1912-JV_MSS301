@@ -1,7 +1,7 @@
 package com.talenthub.candidate.application.usecase;
 
 import com.talenthub.candidate.domain.model.Candidate;
-import com.talenthub.candidate.domain.repository.CandidateRepository;
+import com.talenthub.candidate.domain.CandidateRepository;
 import com.talenthub.candidate.domain.exception.CandidateNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +12,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class DeleteCandidateUseCase {
+
     private final CandidateRepository candidateRepository;
 
     @Transactional
@@ -20,6 +21,5 @@ public class DeleteCandidateUseCase {
                 .orElseThrow(() -> new CandidateNotFoundException(id));
 
         candidate.softDelete();
-        candidateRepository.save(candidate);
     }
 }

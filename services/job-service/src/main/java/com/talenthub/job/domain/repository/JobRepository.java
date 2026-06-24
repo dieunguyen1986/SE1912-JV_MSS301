@@ -1,6 +1,7 @@
 package com.talenthub.job.domain.repository;
 
-import com.talenthub.job.domain.model.Job;
+import com.talenthub.job.domain.aggregate.JobAggregate;
+import com.talenthub.job.infrastructure.specification.JobSearchCriteria;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -8,13 +9,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface JobRepository {
-    Job save(Job job);
 
-    Optional<Job> findById(UUID id);
+    JobAggregate save(JobAggregate aggregate);
 
-    Page<Job> search(String keyword, Pageable pageable);
+    Optional<JobAggregate> findById(UUID id);
 
-    Page<Job> searchPublished(String keyword, Pageable pageable);
+    Page<JobAggregate> search(JobSearchCriteria criteria, Pageable pageable);
 
-    boolean existsByTitle(String title);
+    boolean isExisted(String jobTitle);
+
+    void delete(UUID id);
 }

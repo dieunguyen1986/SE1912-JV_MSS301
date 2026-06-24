@@ -16,8 +16,8 @@ public class GetApplicationUseCase {
     private final ApplicationRepository repo;
 
     @Transactional(readOnly = true)
-    public Application execute(UUID id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ApplicationNotFoundException(id));
+    public Application execute(UUID applicationId) {
+        return repo.findById(applicationId)
+                .orElseThrow(() -> new ApplicationNotFoundException(applicationId));
     }
 }

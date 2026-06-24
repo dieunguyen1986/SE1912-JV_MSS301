@@ -1,17 +1,20 @@
 package com.talenthub.job.domain.repository;
 
-import com.talenthub.job.domain.model.Skill;
+import com.talenthub.job.domain.aggregate.SkillAggregate;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface SkillRepository {
-    Skill save(Skill skill);
 
-    Optional<Skill> findById(UUID id);
+    SkillAggregate save(SkillAggregate aggregate);
 
-    List<Skill> findAll();
+    Optional<SkillAggregate> findById(UUID id);
+
+    List<SkillAggregate> findAll();
 
     boolean existsByName(String name);
+
+    void delete(UUID id);
 }

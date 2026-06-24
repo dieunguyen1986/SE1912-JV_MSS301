@@ -1,67 +1,77 @@
 server:
   port: 8080
 spring:
+  application:
+    name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/talenthub
+
   cloud:
     gateway:
       server:
         webflux:
           routes:
-            - id: job-service
+            - id: public-job
               uri: http://localhost:8081
               predicates:
-                - name: Path
-                  args:
-                    Path:
-                      - /api/v1/public/jobs/**
-                      - /api/v1/jobs/**
+                - Path=/api/v1/public/jobs/**
+            - id: secured-job
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/v1/jobs/**
               filters:
                 - name: RequestRateLimiter
                   args:
-                    redis-rate-limiter.replenishRate: 10  # token nạp lại mỗi giây
-                    redis-rate-limiter.burstCapacity: 20  # token tối đa
-                    redis-rate-limiter.requestedTokens: 1  # mỗi request tốn 1 token
-                    key-resolver: "#{@ipKeyResolver}"
-
-
-            #                - name: Header
-#                  args:
-#                    Header: X-Client-Type, Web
+                    # Số lượng token được nạp lại vào giỏ trong 1 giây (Tốc độ trung bình)
+                    redis-rate-limiter.replenishRate: 10
+                    # Sức chứa tối đa của giỏ (Cho phép bùng nổ - Burst trong 1 giây tối đa bao nhiêu)
+                    redis-rate-limiter.burstCapacity: 20
+                    # Mỗi request tốn bao nhiêu token
+                    redis-rate-limiter.requestedTokens: 1
+                    # SpEL
             - id: candidate-service
-              uri: http://localhost:8082
+              uri: lb://candidate-service
               predicates:
                 - name: Path
                   args:
-                    Path: /api/v1/candidates/**
+                    pattern: /api/v1/candidates/**
                 - name: Header
                   args:
-                    Header: X-Client-Type, Web
+                    header: X-Client-Type
+                    regex: Web
             - id: application-service
-              uri: http://localhost:8083
+              uri: lb://application-service
               predicates:
                 - name: Path
                   args:
-                    Path: /api/v1/application/**
-                - name: Header
-                  args:
-                    Header: X-Client-Type, Web
-            - id: cv-parse-service
-              uri: http://localhost:8084
-              predicates:
-                - name: Path
-                  args:
-                    Path: /api/v1/cv-parser/**
-                - name: Header
-                  args:
-                    Header: X-Client-Type, Web
+                    pattern: /api/v1/applications/**
+            #                - name: Header
+            #                  args:
+            #                    header: X-Client-Type
+            #                    regex: Web
             - id: notification-service
-              uri: http://localhost:8085
+              uri: lb://notification-service
               predicates:
                 - name: Path
                   args:
-                    Path: /api/v1/notifications/**
+                    pattern: /api/v1/notifications/**
                 - name: Header
                   args:
-                    Header: X-Client-Type, Web
+                    header: X-Client-Type
+                    regex: Web
+            - id: cv-parser-service
+              uri: lb://cv-parser-service
+              predicates:
+                - name: Path
+                  args:
+                    pattern: /api/v1/cv-parse/**
+                - name: Header
+                  args:
+                    header: X-Client-Type
+                    regex: Web
           globalcors:
             cors-configurations:
               [ /** ]:
@@ -79,6 +89,18 @@ spring:
                 allowed-headers: "*"
                 allow-credentials: true
                 max-age: 3600
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    lease-expiration-duration-in-seconds: 30
+    lease-renewal-interval-in-seconds: 10
+    instance-id: ${spring.application.name}:${server.port}
+
 management:
   endpoints:
     web:

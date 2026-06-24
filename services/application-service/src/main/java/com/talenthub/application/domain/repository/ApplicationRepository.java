@@ -15,6 +15,8 @@ public interface ApplicationRepository {
 
     boolean existsByCandidateIdAndJobId(UUID candidateId, UUID jobId);  // BRULE-09
 
-    /** Phục vụ Kanban board: lọc theo job và/hoặc stage (cả hai optional). */
+    /**
+     * Phục vụ Kanban board: lọc theo job và/hoặc stage (cả hai optional).
+     */
     Page<Application> search(UUID jobId, PipelineStage stage, Pageable pageable);
 }
