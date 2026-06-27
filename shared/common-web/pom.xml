@@ -39,18 +39,9 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
+            <!-- common-web là thư viện dùng chung (không có main class) nên KHÔNG khai báo
+                 spring-boot-maven-plugin: goal repackage kế thừa từ parent sẽ fail "Unable to
+                 find main class". Các app khác (api-gateway, *-service) mới repackage thành fat jar. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

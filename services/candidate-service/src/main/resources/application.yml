@@ -4,7 +4,7 @@ spring:
   application:
     name: candidate-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/talenthub_candidate_db
+    url: jdbc:postgresql://candidate-db:5432/talenthub_candidate_dbs
     username: dieunt
     password:
   jpa:

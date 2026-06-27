@@ -21,6 +21,7 @@
     <modules>
         <module>shared/common-web</module>
         <module>infra/eureka-server</module>
+        <module>infra/api-gateway</module>
         <module>services/job-service</module>
         <module>services/candidate-service</module>
         <module>services/application-service</module>
@@ -73,6 +74,16 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring-boot.version}</version>
+                    <!-- spring-boot-starter-parent không được dùng ở đây, nên phải tự bind
+                         goal repackage để sinh fat jar chạy được (java -jar). Khai báo ở
+                         pluginManagement để mọi service kế thừa, tránh lặp lại từng module. -->
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
