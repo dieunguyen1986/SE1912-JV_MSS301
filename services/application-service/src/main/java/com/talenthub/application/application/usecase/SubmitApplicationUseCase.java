@@ -9,12 +9,15 @@ import com.talenthub.application.infrastructure.client.candidate.CandidateServic
 import com.talenthub.application.infrastructure.client.candidate.CandidateView;
 import com.talenthub.application.infrastructure.client.job.JobServiceClient;
 import com.talenthub.application.infrastructure.client.job.JobView;
+import com.talenthub.application.infrastructure.messaging.ApplicationEventPublisher;
+import com.talenthub.events.ApplicationCreatedEvent;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -26,6 +29,7 @@ public class SubmitApplicationUseCase {
     private final ApplicationRepository repo;
     private final JobServiceClient jobServiceClient;
     private final CandidateServiceClient candidateServiceClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UUID execute(SubmitApplicationCommand cmd) {
@@ -54,7 +58,20 @@ public class SubmitApplicationUseCase {
 
         Application application = Application.submit(cmd.candidateId(), cmd.jobId());
 
+        Application saved = repo.save(application);
 
-        return repo.save(application).getId();
+        ApplicationCreatedEvent event = new ApplicationCreatedEvent(
+                UUID.randomUUID(),             // eventId: unique cho mỗi event
+                saved.getId(),                 // applicationId
+                cmd.candidateId(),             // candidateId
+                cmd.jobId(),                   // jobId
+                candidate.email(),             // candidateEmail
+                candidate.fullName(),          // candidateFullName
+                job.title(),                   // jobTitle
+                Instant.now()                  // occurredAt
+        );
+        eventPublisher.publishApplicationCreated(event);
+
+        return saved.getId();
     }
 }

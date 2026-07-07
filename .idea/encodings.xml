@@ -15,9 +15,13 @@
     <file url="file://$PROJECT_DIR$/services/job-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/services/notification-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/services/notification-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared/common-event/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared/common-event/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/shared/common-web/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/shared/common-web/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file:///src/main/java" charset="UTF-8" />
+    <file url="file:///src/main/resources" charset="UTF-8" />
   </component>
 </project>

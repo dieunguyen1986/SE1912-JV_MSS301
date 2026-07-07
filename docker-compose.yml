@@ -5,7 +5,45 @@ name: talenthub
 # network block is needed for a single-file local setup.
 
 services:
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    ports:
+      - "5672:5672"          # AMQP protocol port (producer/consumer kết nối qua đây)
+      - "15672:15672"        # Management UI: http://localhost:15672 (talenthub/talenthub)
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_DEFAULT_USER: talenthub
+      RABBITMQ_DEFAULT_PASS: talenthub
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
+  # ===== EMAIL SINK (MailHog) =====
+  # MailHog bắt tất cả email gửi qua SMTP port 1025 và hiển thị trên web UI.
+  mailhog:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"          # SMTP port (notification-service gửi email tới đây)
+      - "8025:8025"          # Web UI: http://localhost:8025 (xem email đã gửi)
+  # ===== DATABASE cho Notification Service =====
+  notification-db:
+    image: postgres:16-alpine
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_DB: talenthub_notification_dbs
+      POSTGRES_USER: dieunt
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dieunt -d talenthub_notification_dbs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   # ===== DATABASES (one Postgres per service) =====
   application-db:
     image: postgres:16-alpine
@@ -124,10 +162,13 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       # Feign client to job-service uses an explicit URL; use the container name.
       CLIENTS_JOB_SERVICE_URL: http://job-service:8081
+      SPRING_RABBITMQ_HOST: rabbitmq
     depends_on:
       eureka-server:
         condition: service_healthy
       application-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   candidate-service:
@@ -156,7 +197,28 @@ services:
       job-db:
         condition: service_healthy
 
+  # ===== NOTIFICATION SERVICE =====
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      # Override host cho RabbitMQ, MailHog, DB (trong Docker dùng service name)
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_MAIL_HOST: mailhog
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/talenthub_notification_dbs
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      notification-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   application-db-data:
   candidate-db-data:
   job-db-data:
+  notification-db-data:

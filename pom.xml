@@ -27,6 +27,7 @@
         <module>services/application-service</module>
         <module>services/notification-service</module>
         <module>services/cv-parser-service</module>
+        <module>shared/common-event</module>
     </modules>
 
     <dependencyManagement>

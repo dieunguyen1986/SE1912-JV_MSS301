@@ -11,6 +11,12 @@ spring:
     hibernate:
       ddl-auto: update    # dev only, prod đổi qua Flyway
     properties.hibernate.format_sql: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    stream:
+      username: talenthub
+      password: talenthub
   cloud:
     openfeign:
       client:
