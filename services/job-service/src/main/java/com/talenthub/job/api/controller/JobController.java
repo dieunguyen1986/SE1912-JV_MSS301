@@ -47,10 +47,9 @@ public class JobController {
     }
 
     @GetMapping("/{id}")
-    public JobResponse getById(@PathVariable("id") UUID id, @RequestHeader("X-User-Email") String email) {
+    public JobResponse getById(@PathVariable("id") UUID id) {
 
         log.info("Job service instance with port: {}", serverPort);
-        log.info("User logged: {}", email);
         return JobResponse.from(getJobByIdUseCase.execute(id));
     }
 
@@ -84,7 +83,6 @@ public class JobController {
                 null, request.getMinSalary(), request.getMaxSalary(), request.getDeadline());
         return JobResponse.from(updateJobUseCase.execute(id, command));
     }
-
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

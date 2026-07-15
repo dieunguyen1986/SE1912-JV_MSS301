@@ -14,9 +14,8 @@ spring:
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: 5672
-    stream:
-      username: talenthub
-      password: talenthub
+    username: talenthub
+    password: talenthub
   cloud:
     openfeign:
       client:

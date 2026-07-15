@@ -40,10 +40,11 @@ public class Application extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "current_stage", nullable = false, length = 30)
-    private PipelineStage currentStage;
+    private PipelineStage currentStage; // CANCELLED hoặc NEEDS_MANUAL_REVIEW
 
     @Column(name = "submitted_at", nullable = false)
     private Instant submittedAt;
+
 
     /**
      * Note đánh giá của Recruiter/HM qua từng stage.

@@ -48,4 +48,7 @@ public class Job extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status;
+
+    @Column(name = "applicant_count")
+    private Integer applicantCount;
 }

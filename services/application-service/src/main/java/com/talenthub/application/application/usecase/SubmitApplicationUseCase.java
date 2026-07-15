@@ -1,17 +1,20 @@
 package com.talenthub.application.application.usecase;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.talenthub.application.application.command.SubmitApplicationCommand;
 import com.talenthub.application.domain.exception.DuplicateApplicationException;
 import com.talenthub.application.domain.exception.JobNotOpenForApplicationException;
 import com.talenthub.application.domain.model.Application;
+import com.talenthub.application.domain.model.OutboxEvent;
 import com.talenthub.application.domain.repository.ApplicationRepository;
+import com.talenthub.application.domain.repository.OutboxEventRepository;
 import com.talenthub.application.infrastructure.client.candidate.CandidateServiceClient;
 import com.talenthub.application.infrastructure.client.candidate.CandidateView;
 import com.talenthub.application.infrastructure.client.job.JobServiceClient;
 import com.talenthub.application.infrastructure.client.job.JobView;
 import com.talenthub.application.infrastructure.messaging.ApplicationEventPublisher;
 import com.talenthub.events.ApplicationCreatedEvent;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,13 +32,13 @@ public class SubmitApplicationUseCase {
     private final ApplicationRepository repo;
     private final JobServiceClient jobServiceClient;
     private final CandidateServiceClient candidateServiceClient;
-    private final ApplicationEventPublisher eventPublisher;
+    private final OutboxEventRepository outboxEventRepository; // IoC Container - WWebApplicationContext new Adapter
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public UUID execute(SubmitApplicationCommand cmd) {
 
         JobView job = jobServiceClient.getJobById(cmd.jobId());
-
 
         if (!job.isPublished()) {
             throw new JobNotOpenForApplicationException(cmd.jobId(), " not yet published!");
@@ -45,7 +48,8 @@ public class SubmitApplicationUseCase {
             throw new JobNotOpenForApplicationException(cmd.jobId(), " were expired!");
         }
 
-        // Validate candidate tồn tại (gọi candidate-service qua Eureka LB) - làm TRƯỚC dup check
+        // Validate candidate tồn tại (gọi candidate-service qua Eureka LB) - làm TRƯỚC
+        // dup check
         // để mọi request đều thực sự gọi sang candidate-service.
         CandidateView candidate = candidateServiceClient.getCandidateById(cmd.candidateId());
 
@@ -60,17 +64,38 @@ public class SubmitApplicationUseCase {
 
         Application saved = repo.save(application);
 
-        ApplicationCreatedEvent event = new ApplicationCreatedEvent(
-                UUID.randomUUID(),             // eventId: unique cho mỗi event
-                saved.getId(),                 // applicationId
-                cmd.candidateId(),             // candidateId
-                cmd.jobId(),                   // jobId
-                candidate.email(),             // candidateEmail
-                candidate.fullName(),          // candidateFullName
-                job.title(),                   // jobTitle
-                Instant.now()                  // occurredAt
-        );
-        eventPublisher.publishApplicationCreated(event);
+//        ApplicationCreatedEvent event = new ApplicationCreatedEvent(
+//                UUID.randomUUID(), // eventId: unique cho mỗi event
+//                saved.getId(), // applicationId
+//                cmd.candidateId(), // candidateId
+//                cmd.jobId(), // jobId
+//                candidate.email(), // candidateEmail
+//                candidate.fullName(), // candidateFullName
+//                job.title(), // jobTitle
+//                Instant.now() // occurredAt
+//        );
+//        eventPublisher.publishApplicationCreated(event);
+
+        // Parse CV
+
+        // Update count of application
+
+        // Store to outbox table
+
+        try {
+            outboxEventRepository.save(OutboxEvent.create("Application", saved.getId(), "application.created", objectMapper.writeValueAsString(new ApplicationCreatedEvent(
+                    UUID.randomUUID(), // eventId: unique cho mỗi event
+                    saved.getId(), // applicationId
+                    cmd.candidateId(), // candidateId
+                    cmd.jobId(), // jobId
+                    candidate.email(), // candidateEmail
+                    candidate.fullName(), // candidateFullName
+                    job.title(), // jobTitle
+                    Instant.now() // occurredAt
+            ))));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize for a new application created event");
+        }
 
         return saved.getId();
     }

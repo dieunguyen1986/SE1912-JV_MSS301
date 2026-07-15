@@ -8,6 +8,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/realms/talenthub
+          jwk-set-uri: http://keycloak:8080/realms/talenthub/protocol/openid-connect/certs
 
   cloud:
     gateway:
@@ -15,11 +16,11 @@ spring:
         webflux:
           routes:
             - id: public-job
-              uri: http://localhost:8081
+              uri: http://job-service:8081
               predicates:
                 - Path=/api/v1/public/jobs/**
             - id: secured-job
-              uri: http://localhost:8081
+              uri: http://job-service:8081
               predicates:
                 - Path=/api/v1/jobs/**
               filters:
