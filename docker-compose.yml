@@ -8,8 +8,8 @@ services:
   rabbitmq:
     image: rabbitmq:4-management-alpine
     ports:
-      - "5672:5672"          # AMQP protocol port (producer/consumer kết nối qua đây)
-      - "15672:15672"        # Management UI: http://localhost:15672 (talenthub/talenthub)
+      - "5672:5672" # AMQP protocol port (producer/consumer kết nối qua đây)
+      - "15672:15672" # Management UI: http://localhost:15672 (talenthub/talenthub)
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_DEFAULT_USER: talenthub
@@ -20,14 +20,25 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000" # Cổng API cho code Java gọi vào
+      - "9001:9001" # Cổng Web Console UI (trình duyệt)
+    environment:
+      MINIO_ROOT_USER: talenthub_admin
+      MINIO_ROOT_PASSWORD: talenthub_password
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
 
   # ===== EMAIL SINK (MailHog) =====
   # MailHog bắt tất cả email gửi qua SMTP port 1025 và hiển thị trên web UI.
   mailhog:
     image: axllent/mailpit:latest
     ports:
-      - "1025:1025"          # SMTP port (notification-service gửi email tới đây)
-      - "8025:8025"          # Web UI: http://localhost:8025 (xem email đã gửi)
+      - "1025:1025" # SMTP port (notification-service gửi email tới đây)
+      - "8025:8025" # Web UI: http://localhost:8025 (xem email đã gửi)
   # ===== DATABASE cho Notification Service =====
   notification-db:
     image: postgres:16-alpine
@@ -40,7 +51,7 @@ services:
     volumes:
       - notification-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dieunt -d talenthub_notification_dbs"]
+      test: [ "CMD-SHELL", "pg_isready -U dieunt -d talenthub_notification_dbs" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -48,7 +59,7 @@ services:
   application-db:
     image: postgres:16-alpine
     ports:
-      - "5433:5432"          # dev only: open to host so DBeaver can connect; do NOT do this in production
+      - "5433:5432" # dev only: open to host so DBeaver can connect; do NOT do this in production
     environment:
       POSTGRES_DB: talenthub_application_dbs
       POSTGRES_USER: dieunt
@@ -58,7 +69,7 @@ services:
       - application-db-data:/var/lib/postgresql/data
     healthcheck:
       # User and DB name MUST match the ones above, or the check never passes.
-      test: ["CMD-SHELL", "pg_isready -U dieunt -d talenthub_application_dbs"]
+      test: [ "CMD-SHELL", "pg_isready -U dieunt -d talenthub_application_dbs" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -66,7 +77,7 @@ services:
   candidate-db:
     image: postgres:16-alpine
     ports:
-      - "5434:5432"          # dev only: open to host so DBeaver can connect; do NOT do this in production
+      - "5434:5432" # dev only: open to host so DBeaver can connect; do NOT do this in production
     environment:
       POSTGRES_DB: talenthub_candidate_dbs
       POSTGRES_USER: dieunt
@@ -74,7 +85,7 @@ services:
     volumes:
       - candidate-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dieunt -d talenthub_candidate_dbs"]
+      test: [ "CMD-SHELL", "pg_isready -U dieunt -d talenthub_candidate_dbs" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -82,7 +93,7 @@ services:
   job-db:
     image: postgres:16-alpine
     ports:
-      - "5435:5432"          # dev only: open to host so DBeaver can connect; do NOT do this in production
+      - "5435:5432" # dev only: open to host so DBeaver can connect; do NOT do this in production
     environment:
       POSTGRES_DB: talenthub_job_dbs
       POSTGRES_USER: dieunt
@@ -90,7 +101,7 @@ services:
     volumes:
       - job-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dieunt -d talenthub_job_dbs"]
+      test: [ "CMD-SHELL", "pg_isready -U dieunt -d talenthub_job_dbs" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -99,7 +110,7 @@ services:
   redis:
     image: redis:7-alpine
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -108,11 +119,11 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     # start-dev: chế độ dev (không cần HTTPS). --import-realm: nạp realm từ file lúc khởi động.
-    command: ["start-dev", "--import-realm"]
+    command: [ "start-dev", "--import-realm" ]
     ports:
-      - "8180:8080"          # gọi token tại http://localhost:8180/realms/talenthub/...
+      - "8180:8080" # gọi token tại http://localhost:8180/realms/talenthub/...
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin       # tài khoản admin console (dev)
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin # tài khoản admin console (dev)
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     volumes:
       # Keycloak đọc mọi file JSON trong thư mục import này lúc start
@@ -125,9 +136,9 @@ services:
       context: .
       dockerfile: infra/eureka-server/Dockerfile
     ports:
-      - "8761:8761"          # keep published so you can open the dashboard at http://localhost:8761
+      - "8761:8761" # keep published so you can open the dashboard at http://localhost:8761
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8761/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -138,7 +149,7 @@ services:
       context: .
       dockerfile: infra/api-gateway/Dockerfile
     ports:
-      - "8080:8080"          # the only entry point exposed to the outside
+      - "8080:8080" # the only entry point exposed to the outside
     environment:
       SPRING_PROFILES_ACTIVE: docker
       # Inside Docker, "localhost" is the container itself. Point clients at the
@@ -191,10 +202,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
     depends_on:
       eureka-server:
         condition: service_healthy
       job-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   # ===== NOTIFICATION SERVICE =====
@@ -217,8 +231,25 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  # ===== CV PARSER SERVICE =====
+  cv-parser-service:
+    build:
+      context: .
+      dockerfile: services/cv-parser-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+
 volumes:
   application-db-data:
   candidate-db-data:
   job-db-data:
   notification-db-data:
+  minio_data:

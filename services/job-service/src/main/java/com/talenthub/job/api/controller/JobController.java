@@ -80,7 +80,7 @@ public class JobController {
     public JobResponse update(@PathVariable UUID id, @Valid @RequestBody JobUpdateRequest request) {
         JobCommand command = new JobCommand(
                 request.getTitle(), request.getDescription(), request.getDepartmentId(),
-                null, request.getMinSalary(), request.getMaxSalary(), request.getDeadline());
+                null, request.getMinSalary(), request.getMaxSalary(), request.getDeadline(), request.getMaxApplicants());
         return JobResponse.from(updateJobUseCase.execute(id, command));
     }
 
@@ -98,6 +98,7 @@ public class JobController {
                 request.getRequiredSkills(),
                 request.getMinSalary(),
                 request.getMaxSalary(),
-                request.getDeadline());
+                request.getDeadline(),
+                request.getMaxApplicants());
     }
 }

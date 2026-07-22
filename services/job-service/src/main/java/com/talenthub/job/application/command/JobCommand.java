@@ -20,4 +20,5 @@ public class JobCommand {
     private BigDecimal minSalary;
     private BigDecimal maxSalary;
     private LocalDate deadline;
+    private Integer maxApplicants;
 }

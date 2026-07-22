@@ -39,10 +39,6 @@ spring:
                 - name: Path
                   args:
                     pattern: /api/v1/candidates/**
-                - name: Header
-                  args:
-                    header: X-Client-Type
-                    regex: Web
             - id: application-service
               uri: lb://application-service
               predicates:
@@ -59,20 +55,12 @@ spring:
                 - name: Path
                   args:
                     pattern: /api/v1/notifications/**
-                - name: Header
-                  args:
-                    header: X-Client-Type
-                    regex: Web
             - id: cv-parser-service
               uri: lb://cv-parser-service
               predicates:
                 - name: Path
                   args:
                     pattern: /api/v1/cv-parse/**
-                - name: Header
-                  args:
-                    header: X-Client-Type
-                    regex: Web
           globalcors:
             cors-configurations:
               [ /** ]:

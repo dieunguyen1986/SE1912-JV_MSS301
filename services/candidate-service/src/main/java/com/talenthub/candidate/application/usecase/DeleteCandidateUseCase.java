@@ -1,7 +1,7 @@
 package com.talenthub.candidate.application.usecase;
 
 import com.talenthub.candidate.domain.model.Candidate;
-import com.talenthub.candidate.domain.CandidateRepository;
+import com.talenthub.candidate.domain.repository.CandidateRepository;
 import com.talenthub.candidate.domain.exception.CandidateNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

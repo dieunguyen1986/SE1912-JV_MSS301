@@ -39,4 +39,7 @@ public class JobCreateRequest {
     @NotNull
     @Future
     private LocalDate deadline;
+
+    @Min(1)
+    private Integer maxApplicants;
 }

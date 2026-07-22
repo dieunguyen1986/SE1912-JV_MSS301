@@ -1,4 +1,4 @@
-package com.talenthub.candidate.domain;
+package com.talenthub.candidate.domain.repository;
 
 import com.talenthub.candidate.domain.model.Candidate;
 import org.springframework.data.domain.Page;

@@ -25,11 +25,13 @@ public class JobAggregate {
     private BigDecimal maxSalary;
     private LocalDate deadline;
     private Status status;
+    private Integer applicantCount;
+    private Integer maxApplicants;
     private Instant createdAt;
     private Instant updatedAt;
 
     public static JobAggregate createJob(String title, String description, UUID departmentId,
-                                         BigDecimal minSalary, BigDecimal maxSalary, LocalDate deadline) {
+                                         BigDecimal minSalary, BigDecimal maxSalary, LocalDate deadline, Integer maxApplicants) {
         validateSalary(minSalary, maxSalary);
         validateDeadline(deadline);
 
@@ -41,12 +43,15 @@ public class JobAggregate {
         job.maxSalary = maxSalary;
         job.deadline = deadline;
         job.status = Status.DRAFT;
+        job.maxApplicants = maxApplicants;
+        job.applicantCount = 0;
         return job;
     }
 
     public static JobAggregate reconstitute(UUID id, String title, String description, UUID departmentId,
                                             BigDecimal minSalary, BigDecimal maxSalary, LocalDate deadline,
-                                            Status status, Instant createdAt, Instant updatedAt) {
+                                            Status status, Integer applicantCount, Integer maxApplicants,
+                                            Instant createdAt, Instant updatedAt) {
         JobAggregate job = new JobAggregate();
         job.id = id;
         job.title = title;
@@ -56,6 +61,8 @@ public class JobAggregate {
         job.maxSalary = maxSalary;
         job.deadline = deadline;
         job.status = status;
+        job.applicantCount = applicantCount != null ? applicantCount : 0;
+        job.maxApplicants = maxApplicants != null ? maxApplicants : 0;
         job.createdAt = createdAt;
         job.updatedAt = updatedAt;
         return job;
@@ -103,6 +110,19 @@ public class JobAggregate {
             throw new IllegalStateException("Job is already CLOSED");
         }
         this.status = Status.CLOSED;
+    }
+
+    public void incrementApplicantCount() {
+        if (this.applicantCount == null) {
+            this.applicantCount = 0;
+        }
+        this.applicantCount++;
+    }
+
+    public void decrementApplicantCount() {
+        if (this.applicantCount != null && this.applicantCount > 0) {
+            this.applicantCount--;
+        }
     }
 
     private static void validateSalary(BigDecimal min, BigDecimal max) {

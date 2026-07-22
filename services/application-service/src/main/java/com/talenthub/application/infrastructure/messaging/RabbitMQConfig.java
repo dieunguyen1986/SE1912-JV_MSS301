@@ -19,6 +19,19 @@ public class RabbitMQConfig {
 
     // Routing key: convention theo aggregate + action
     public static final String ROUTING_KEY_APP_CREATED = "application.created";
+    public static final String RK_JOB_APPLIED_INCREMENT = "job.application-increment";
+    public static final String RK_JOB_SLOT_REJECTED = "job.slot.rejected";
+    public static final String QUEUE_JOB_SLOT_REJECTED = "application.job.slot.rejected.queue";
+    
+    public static final String RK_CV_PARSED_SUCCESS = "cv.parsed.success";
+    public static final String QUEUE_APPLICATION_CV_PARSED_SUCCESS = "application.cv.parsed.success.queue";
+    
+    public static final String RK_CV_PARSED_FAILED = "cv.parsed.failed";
+    public static final String QUEUE_APPLICATION_CV_PARSED_FAILED = "application.cv.parsed.failed.queue";
+
+    // Dead Letter Exchange: phải khớp với notification-service
+    public static final String DLQ_EXCHANGE = "talenthub.events.dlx";
+
 
     @Bean
     public TopicExchange talenthubExchange() {
@@ -27,11 +40,14 @@ public class RabbitMQConfig {
 
     /**
      * Queue chính: durable = true để message không bị mất khi RabbitMQ restart.
+     * deadLetterExchange: phải khớp với cấu hình của notification-service,
+     * nếu không RabbitMQ sẽ báo PRECONDITION_FAILED khi redeclare queue.
      */
     @Bean
     public Queue notificationQueue() {
         return QueueBuilder
                 .durable(QUEUE_NOTIFICATION)
+                .deadLetterExchange(DLQ_EXCHANGE)
                 .build();
     }
 
@@ -46,6 +62,22 @@ public class RabbitMQConfig {
                 .bind(notificationQueue)
                 .to(talenthubExchange)
                 .with(ROUTING_KEY_APP_CREATED);
+    }
+
+    /**
+     * Queue để application-service nhận event job.slot.rejected từ job-service.
+     */
+    @Bean
+    public Queue jobSlotRejectedQueue() {
+        return QueueBuilder.durable(QUEUE_JOB_SLOT_REJECTED).build();
+    }
+
+    @Bean
+    public Binding jobSlotRejectedBinding(Queue jobSlotRejectedQueue, TopicExchange talenthubExchange) {
+        return BindingBuilder
+                .bind(jobSlotRejectedQueue)
+                .to(talenthubExchange)
+                .with(RK_JOB_SLOT_REJECTED);
     }
 
     /**

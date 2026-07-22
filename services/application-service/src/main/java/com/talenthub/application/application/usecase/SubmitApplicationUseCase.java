@@ -13,8 +13,8 @@ import com.talenthub.application.infrastructure.client.candidate.CandidateServic
 import com.talenthub.application.infrastructure.client.candidate.CandidateView;
 import com.talenthub.application.infrastructure.client.job.JobServiceClient;
 import com.talenthub.application.infrastructure.client.job.JobView;
-import com.talenthub.application.infrastructure.messaging.ApplicationEventPublisher;
 import com.talenthub.events.ApplicationCreatedEvent;
+import com.talenthub.events.JobSlotReservedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -76,26 +76,44 @@ public class SubmitApplicationUseCase {
 //        );
 //        eventPublisher.publishApplicationCreated(event);
 
-        // Parse CV
 
         // Update count of application
+        try {
+            outboxEventRepository.save(OutboxEvent.create("Application", saved.getId(), "job.application-increment",
+                    objectMapper.writeValueAsString(new JobSlotReservedEvent(
+                            saved.getId(),
+                            cmd.jobId(),
+                            cmd.candidateId(),
+                            candidate.email(),
+                            candidate.fullName(),
+                            cmd.cvFileUrl(),
+                            job.title()
+                    ))
+            ));
+        } catch (JsonProcessingException e) {
+            log.error("Can not publish message to job service: {}", e.getMessage());
+        }
+
+        // Parse CV
+
 
         // Store to outbox table
 
-        try {
-            outboxEventRepository.save(OutboxEvent.create("Application", saved.getId(), "application.created", objectMapper.writeValueAsString(new ApplicationCreatedEvent(
-                    UUID.randomUUID(), // eventId: unique cho mỗi event
-                    saved.getId(), // applicationId
-                    cmd.candidateId(), // candidateId
-                    cmd.jobId(), // jobId
-                    candidate.email(), // candidateEmail
-                    candidate.fullName(), // candidateFullName
-                    job.title(), // jobTitle
-                    Instant.now() // occurredAt
-            ))));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize for a new application created event");
-        }
+//        try {
+//            outboxEventRepository.save(OutboxEvent.create("Application", saved.getId(), "application.created",
+//                    objectMapper.writeValueAsString(new ApplicationCreatedEvent(
+//                            UUID.randomUUID(), // eventId: unique cho mỗi event
+//                            saved.getId(), // applicationId
+//                            cmd.candidateId(), // candidateId
+//                            cmd.jobId(), // jobId
+//                            candidate.email(), // candidateEmail
+//                            candidate.fullName(), // candidateFullName
+//                            job.title(), // jobTitle
+//                            Instant.now() // occurredAt
+//                    ))));
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException("Failed to serialize for a new application created event");
+//        }
 
         return saved.getId();
     }

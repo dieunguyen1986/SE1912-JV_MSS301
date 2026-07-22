@@ -28,7 +28,9 @@ public class CreateNewJobUseCase {
                 command.getDepartmentId(),
                 command.getMinSalary(),
                 command.getMaxSalary(),
-                command.getDeadline());
+                command.getDeadline(),
+                command.getMaxApplicants()
+        );
 
         return jobRepository.save(aggregate).getId();
     }

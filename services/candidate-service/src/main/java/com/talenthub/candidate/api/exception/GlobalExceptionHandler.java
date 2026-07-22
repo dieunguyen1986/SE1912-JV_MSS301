@@ -44,4 +44,9 @@ public class GlobalExceptionHandler {
         pd.setProperty("errors", fieldErrors);
         return pd;
     }
+
+    @ExceptionHandler(com.talenthub.candidate.domain.exception.FileStorageException.class)
+    public ProblemDetail handleFileStorageException(com.talenthub.candidate.domain.exception.FileStorageException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
 }

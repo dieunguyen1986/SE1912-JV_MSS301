@@ -11,6 +11,11 @@ spring:
     hibernate:
       ddl-auto: update    # dev only, prod đổi qua Flyway
     properties.hibernate.format_sql: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:talenthub}
+    password: ${RABBITMQ_PASS:talenthub}
 eureka:
  client:
    service-url:

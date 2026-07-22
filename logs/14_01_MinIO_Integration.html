@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 14 – Tích hợp MinIO Storage | MSS301</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --ink-muted: #5a5a5a;
+      --ink-light: #888;
+      --border: #d4d4d4;
+      --border-light: #e8e8e8;
+      --bg: #ffffff;
+      --bg-subtle: #f7f7f7;
+      --bg-code: #f3f3f0;
+      --accent: #1a4f8a;
+      --accent-muted: #e8eef6;
+      --warn: #7a4f00;
+      --warn-bg: #fdf8ec;
+      --success: #1a5c35;
+      --success-bg: #edf7f0;
+      --danger: #8b1a1a;
+      --danger-bg: #fdf0f0;
+      --rule: 1px solid var(--border);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--ink);
+      background: var(--bg);
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+
+    .doc-header {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+
+    .course-tag {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+    }
+
+    .doc-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .doc-header .subtitle {
+      font-size: 15px;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 32px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--ink-muted);
+      font-family: 'Courier New', monospace;
+    }
+
+    .meta-row span::before {
+      content: attr(data-label) ': ';
+      color: var(--ink-light);
+    }
+
+    .toc {
+      background: var(--bg-subtle);
+      border: var(--rule);
+      padding: 24px 28px;
+      margin-bottom: 48px;
+      font-size: 14px;
+    }
+
+    .toc-title {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 12px;
+    }
+
+    .toc ol {
+      padding-left: 20px;
+      line-height: 2;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    .toc li.sub {
+      margin-left: 16px;
+      list-style: disc;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    h2 {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-top: 56px;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: var(--rule);
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-top: 36px;
+      margin-bottom: 12px;
+    }
+
+    h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      margin-top: 24px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-family: 'Courier New', monospace;
+    }
+
+    p {
+      margin-bottom: 16px;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: var(--rule);
+      border-left: 3px solid var(--accent);
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      background: var(--bg-code);
+      padding: 1px 5px;
+      border: 1px solid var(--border-light);
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    .filename {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--ink-light);
+      letter-spacing: 0.05em;
+      margin-bottom: -8px;
+      margin-top: 20px;
+    }
+
+    .callout {
+      padding: 16px 20px;
+      margin: 24px 0;
+      border: var(--rule);
+      font-size: 14.5px;
+    }
+
+    .callout.note {
+      background: var(--accent-muted);
+      border-color: #a8c0de;
+    }
+
+    .callout.warn {
+      background: var(--warn-bg);
+      border-color: #e0c060;
+    }
+
+    .callout.success {
+      background: var(--success-bg);
+      border-color: #8ecba8;
+    }
+
+    .callout.danger {
+      background: var(--danger-bg);
+      border-color: #e0a0a0;
+    }
+
+    .callout-label {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .callout.note .callout-label {
+      color: var(--accent);
+    }
+
+    .callout.warn .callout-label {
+      color: var(--warn);
+    }
+
+    .callout.success .callout-label {
+      color: var(--success);
+    }
+
+    .callout.danger .callout-label {
+      color: var(--danger);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14.5px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 16px;
+      border: var(--rule);
+    }
+
+    th {
+      background: var(--bg-subtle);
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+    }
+
+    ul, ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .section-num {
+      display: inline-block;
+      width: 32px;
+      font-family: 'Courier New', monospace;
+      color: var(--ink-light);
+      font-weight: 400;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="doc-header">
+    <div class="course-tag">Tài liệu Thực hành Kiến trúc Phần mềm</div>
+    <h1>Tích hợp MinIO Storage & Quản lý File trong Microservices</h1>
+    <div class="subtitle">Hướng dẫn chi tiết luồng xử lý File CV bằng Claim Check Pattern và kiến trúc MinIO Storage cho TalentHub.</div>
+    <div class="meta-row">
+      <span data-label="Môn học">MSS301</span>
+      <span data-label="Chương">14</span>
+      <span data-label="Đối tượng">Sinh viên & Junior Dev</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-title">Nội dung</div>
+    <ol>
+      <li><a href="#s1">Vấn đề Upload File trong Microservices & Claim Check Pattern</a></li>
+      <li><a href="#s2">Lựa chọn Kiến trúc Upload CV cho TalentHub</a></li>
+      <li><a href="#s3">Hướng dẫn Tích hợp MinIO (5 Bước)</a>
+        <ul>
+          <li class="sub"><a href="#s3-1">Bổ sung MinIO vào Docker Compose</a></li>
+          <li class="sub"><a href="#s3-2">Thêm Dependency vào Project</a></li>
+          <li class="sub"><a href="#s3-3">Cấu hình kết nối MinIO</a></li>
+          <li class="sub"><a href="#s3-4">Tạo Upload Service (Tại Candidate Service)</a></li>
+          <li class="sub"><a href="#s3-5">Tải & Xử lý (Tại CV Parser Service)</a></li>
+        </ul>
+      </li>
+      <li><a href="#s4">Thực hành và Lời khuyên</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============================================================ -->
+  <h2 id="s1"><span class="section-num">01</span>Vấn đề Upload File trong Microservices & Claim Check Pattern</h2>
+  
+  <p>Khi mới làm quen với kiến trúc Microservices và Event-Driven (RabbitMQ/Kafka), một sai lầm cực kỳ phổ biến là "nhét" toàn bộ nội dung file (PDF, hình ảnh) dưới dạng Byte Array hoặc chuỗi Base64 vào thẳng bên trong Event Message.</p>
+  
+  <div class="callout danger">
+    <div class="callout-label">Anti-Pattern (Thực hành xấu)</div>
+    <p>Message Broker (RabbitMQ) được thiết kế tối ưu cho việc truyền các luồng sự kiện rất nhỏ (vài KB). Việc đính kèm file vài MB vào message sẽ gây ra: (1) Tắc nghẽn mạng nội bộ, (2) Tràn bộ nhớ (OOM) của Broker, và (3) Hệ thống sụp đổ khi có lượng request cao.</p>
+  </div>
+
+  <h3>Giải pháp: Claim Check Pattern (Gửi đồ - Lấy thẻ)</h3>
+  <p>Thay vì truyền file trực tiếp qua mạng, hệ thống sử dụng một Object Storage dùng chung (như Amazon S3 hoặc MinIO). Pattern này hoạt động giống hệt quy trình "gửi đồ" ở siêu thị:</p>
+  <ol>
+    <li>Bạn mang cái balo to (File CV) tới siêu thị.</li>
+    <li>Bạn không xách balo đi dạo (Message Broker). Bạn đưa nó cho quầy giữ đồ (Object Storage - MinIO).</li>
+    <li>Quầy giữ đồ trả cho bạn một chiếc thẻ nhựa nhỏ gọn (Đường dẫn File URL / File ID).</li>
+    <li>Bạn cầm chiếc thẻ đó truyền đi khắp nơi. Ai có nhiệm vụ xử lý balo của bạn (ví dụ bảo vệ) sẽ cầm chiếc thẻ đó ra quầy giữ đồ để tự lấy balo về.</li>
+  </ol>
+
+  <!-- ============================================================ -->
+  <h2 id="s2"><span class="section-num">02</span>Lựa chọn Kiến trúc Upload CV cho TalentHub</h2>
+  
+  <p>Trong hệ thống TalentHub, File CV về mặt nghiệp vụ thuộc quyền sở hữu của <code>candidate-service</code>. Tuy nhiên, hành động "Nộp đơn" lại được gọi tới <code>application-service</code>. Vậy file CV nên đi đường nào?</p>
+
+  <p>Chúng ta sử dụng giải pháp chuẩn mực (Best Practice) cho Frontend hiện đại (React/Angular/Vue) bằng cách <strong>chia việc Upload thành 2 bước riêng biệt</strong>:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Bước</th>
+        <th>Hành động của UI (Frontend)</th>
+        <th>Kết quả nhận được</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Bước 1 (Upload)</strong></td>
+        <td>UI gửi file CV gọi API <code>POST /api/candidates/{id}/cvs</code> sang thẳng <code>candidate-service</code>. Service này lưu file vào MinIO.</td>
+        <td>Trả về mã giữ đồ (Ví dụ: <code>fileName = "123-abc.pdf"</code>).</td>
+      </tr>
+      <tr>
+        <td><strong>Bước 2 (Apply)</strong></td>
+        <td>UI ghép JSON dữ liệu form cùng với cái <code>fileName</code> đó, gửi API <code>POST /api/applications</code> sang <code>application-service</code>.</td>
+        <td>Nộp đơn thành công. Bắt đầu Saga Flow.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Với cách này, <code>application-service</code> <strong>chỉ làm việc với text</strong> (tên file), giúp hệ thống tách bạch hoàn toàn, không có service nào phải đóng vai trò "người vận chuyển file" tốn kém băng thông.</p>
+
+
+  <!-- ============================================================ -->
+  <h2 id="s3"><span class="section-num">03</span>Hướng dẫn Tích hợp MinIO (5 Bước)</h2>
+
+  <p>Dưới đây là các bước để dựng MinIO và viết mã tích hợp vào dự án Spring Boot.</p>
+
+  <h3 id="s3-1">3.1. Bổ sung MinIO vào Docker Compose</h3>
+  <p>Mở file <code>docker-compose.yml</code> của dự án và bổ sung cấu hình sau. Chú ý khai báo volume ở cuối file.</p>
+  <div class="filename">docker-compose.yml</div>
+  <pre><code>services:
+  # ... các service khác ...
+  
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"     # Cổng API cho Backend Java gọi vào
+      - "9001:9001"     # Cổng Web Console UI (Trình duyệt)
+    environment:
+      MINIO_ROOT_USER: talenthub_admin
+      MINIO_ROOT_PASSWORD: talenthub_password
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+# ...
+volumes:
+  minio_data:</code></pre>
+
+  <h3 id="s3-2">3.2. Thêm Dependency vào Project</h3>
+  <p>Bổ sung thư viện MinIO SDK vào <code>pom.xml</code> của <code>candidate-service</code> (để upload) và <code>cv-parser-service</code> (để download).</p>
+  <div class="filename">pom.xml</div>
+  <pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;io.minio&lt;/groupId&gt;
+    &lt;artifactId&gt;minio&lt;/artifactId&gt;
+    &lt;version&gt;8.5.7&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+
+  <h3 id="s3-3">3.3. Cấu hình kết nối MinIO</h3>
+  <div class="filename">application.yml</div>
+  <pre><code>minio:
+  url: http://localhost:9000
+  access-key: talenthub_admin
+  secret-key: talenthub_password
+  bucket-name: cv-uploads</code></pre>
+  
+  <p>Tạo một Configuration class để khai báo Bean MinioClient:</p>
+  <div class="filename">MinioConfig.java</div>
+  <pre><code>@Configuration
+public class MinioConfig {
+
+    @Value("${minio.url}") private String url;
+    @Value("${minio.access-key}") private String accessKey;
+    @Value("${minio.secret-key}") private String secretKey;
+
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint(url)
+                .credentials(accessKey, secretKey)
+                .build();
+    }
+}</code></pre>
+
+  <h3 id="s3-4">3.4. Tạo Upload Service (Tại Candidate Service)</h3>
+  <p>Đây là class chịu trách nhiệm đưa luồng Byte từ API lên Object Storage.</p>
+  <div class="filename">FileStorageService.java (Tại candidate-service)</div>
+  <pre><code>@Service
+@RequiredArgsConstructor
+public class FileStorageService {
+    
+    private final MinioClient minioClient;
+    @Value("${minio.bucket-name}")
+    private String bucketName;
+
+    public String uploadFile(MultipartFile file) throws Exception {
+        // 1. Sinh tên file ngẫu nhiên để tránh trùng tên (uuid_filename.pdf)
+        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        
+        // 2. Kiểm tra bucket tồn tại chưa (nếu chưa thì tạo)
+        boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!isExist) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+        }
+
+        // 3. Đẩy luồng stream lên MinIO
+        minioClient.putObject(
+            PutObjectArgs.builder()
+                .bucket(bucketName)
+                .object(fileName)
+                .stream(file.getInputStream(), file.getSize(), -1)
+                .contentType(file.getContentType())
+                .build()
+        );
+        
+        return fileName; // Trả về mã định danh (Claim Check)
+    }
+}</code></pre>
+
+  <h3 id="s3-5">3.5. Tải & Xử lý (Tại CV Parser Service)</h3>
+  <p>Khi Saga chạy tới bước kiểm tra CV, hệ thống không nhận File, hệ thống chỉ nhận `fileName`. Worker tại đây sẽ đi lấy file về.</p>
+  <div class="filename">CvMockParserService.java (Tại cv-parser-service)</div>
+  <pre><code>@Service
+@RequiredArgsConstructor
+public class CvMockParserService {
+
+    private final MinioClient minioClient;
+
+    public void parseCv(String fileName) throws Exception {
+        // Lấy luồng dữ liệu của file từ MinIO về bộ nhớ
+        InputStream stream = minioClient.getObject(
+            GetObjectArgs.builder()
+                .bucket("cv-uploads")
+                .object(fileName)
+                .build()
+        );
+        
+        // (Chỉ dành cho Mock Demo) Đoạn này giả lập đang đọc nội dung...
+        // Thực tế: sẽ đẩy InputStream này cho thư viện Apache Tika hoặc AI Model.
+        
+        // Nhớ đóng stream sau khi xử lý xong
+        stream.close();
+    }
+}</code></pre>
+
+  <!-- ============================================================ -->
+  <h2 id="s4"><span class="section-num">04</span>Thực hành và Lời khuyên</h2>
+  
+  <div class="callout success">
+    <div class="callout-label">Lời khuyên kiến trúc (Dành cho Nhóm Trưởng / Senior)</div>
+    <p>
+      - Việc thao tác với MinIO rất giống nhau ở mọi Service. Để tránh lặp code, bạn hãy tạo một Maven Module chung tên là <strong><code>talenthub-common</code></strong> chứa class <code>MinioConfig</code> và <code>FileStorageService</code>, sau đó cho các service khác include dependency này vào.<br>
+      - Trong môi trường thực tế, Frontend sẽ gọi API upload thẳng lên S3/MinIO (thông qua Pre-Signed URL) để tiết kiệm cả 1 nhịp chui qua <code>candidate-service</code>. Tuy nhiên, cách làm 2 bước API như Bài này là phổ biến và phù hợp nhất cho sinh viên vừa làm quen với thiết kế Gateway/Microservices.
+    </p>
+  </div>
+
+  <footer class="doc-footer">
+    <span>MSS301 - FPT University</span>
+    <span>Chapter 14, Part 1/1</span>
+  </footer>
+
+</body>
+</html>

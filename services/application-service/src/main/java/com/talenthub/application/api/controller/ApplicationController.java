@@ -29,7 +29,7 @@ public class ApplicationController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_CANDIDATE')")
     public ResponseEntity<Map<String, UUID>> submit(@Valid @RequestBody SubmitApplicationRequest req) {
-        UUID applicationId = submitUseCase.execute(new SubmitApplicationCommand(req.candidateId(), req.jobId()));
+        UUID applicationId = submitUseCase.execute(new SubmitApplicationCommand(req.candidateId(), req.jobId(), req.cvFileUrl()));
 
         return ResponseEntity.created(URI.create("/api/v1/applications/" +
                 applicationId)).body(Map.of("id", applicationId, "candidateId", req.candidateId()));

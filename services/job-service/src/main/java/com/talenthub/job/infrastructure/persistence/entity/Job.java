@@ -51,4 +51,7 @@ public class Job extends BaseEntity {
 
     @Column(name = "applicant_count")
     private Integer applicantCount;
+
+    @Column(name = "max_applicants")
+    private Integer maxApplicants;
 }

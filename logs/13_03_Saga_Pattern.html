@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 13 – Saga Pattern: Distributed Transaction trong Microservices | MSS301</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --ink-muted: #5a5a5a;
+      --ink-light: #888;
+      --border: #d4d4d4;
+      --border-light: #e8e8e8;
+      --bg: #ffffff;
+      --bg-subtle: #f7f7f7;
+      --bg-code: #f3f3f0;
+      --accent: #1a4f8a;
+      --accent-muted: #e8eef6;
+      --warn: #7a4f00;
+      --warn-bg: #fdf8ec;
+      --success: #1a5c35;
+      --success-bg: #edf7f0;
+      --danger: #8b1a1a;
+      --danger-bg: #fdf0f0;
+      --rule: 1px solid var(--border);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--ink);
+      background: var(--bg);
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+
+    .doc-header {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+
+    .course-tag {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+    }
+
+    .doc-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .doc-header .subtitle {
+      font-size: 15px;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 32px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--ink-muted);
+      font-family: 'Courier New', monospace;
+    }
+
+    .meta-row span::before {
+      content: attr(data-label) ': ';
+      color: var(--ink-light);
+    }
+
+    .toc {
+      background: var(--bg-subtle);
+      border: var(--rule);
+      padding: 24px 28px;
+      margin-bottom: 48px;
+      font-size: 14px;
+    }
+
+    .toc-title {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 12px;
+    }
+
+    .toc ol {
+      padding-left: 20px;
+      line-height: 2;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    .toc li.sub {
+      margin-left: 16px;
+      list-style: disc;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    h2 {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-top: 56px;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: var(--rule);
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-top: 36px;
+      margin-bottom: 12px;
+    }
+
+    h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      margin-top: 24px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-family: 'Courier New', monospace;
+    }
+
+    p {
+      margin-bottom: 16px;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: var(--rule);
+      border-left: 3px solid var(--accent);
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      background: var(--bg-code);
+      padding: 1px 5px;
+      border: 1px solid var(--border-light);
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    .filename {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--ink-light);
+      letter-spacing: 0.05em;
+      margin-bottom: -8px;
+      margin-top: 20px;
+    }
+
+    .callout {
+      padding: 16px 20px;
+      margin: 24px 0;
+      border: var(--rule);
+      font-size: 14.5px;
+    }
+
+    .callout.note {
+      background: var(--accent-muted);
+      border-color: #a8c0de;
+    }
+
+    .callout.warn {
+      background: var(--warn-bg);
+      border-color: #e0c060;
+    }
+
+    .callout.success {
+      background: var(--success-bg);
+      border-color: #8ecba8;
+    }
+
+    .callout.danger {
+      background: var(--danger-bg);
+      border-color: #e0a0a0;
+    }
+
+    .callout-label {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .callout.note .callout-label {
+      color: var(--accent);
+    }
+
+    .callout.warn .callout-label {
+      color: var(--warn);
+    }
+
+    .callout.success .callout-label {
+      color: var(--success);
+    }
+
+    .callout.danger .callout-label {
+      color: var(--danger);
+    }
+
+    .diagram {
+      background: var(--bg-code);
+      border: var(--rule);
+      padding: 24px;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+
+    .diagram-title {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--ink-light);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .diagram pre {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    th {
+      background: var(--bg-subtle);
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 700;
+      padding: 10px 14px;
+      border: var(--rule);
+      text-align: left;
+      color: var(--ink-muted);
+    }
+
+    td {
+      padding: 10px 14px;
+      border: var(--rule);
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background: var(--bg-subtle);
+    }
+
+    .lab-section {
+      border: 2px solid var(--ink);
+      margin: 40px 0;
+    }
+
+    .lab-header {
+      background: var(--ink);
+      color: white;
+      padding: 12px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-body {
+      padding: 24px;
+    }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: white;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0;
+    }
+
+    .checklist li {
+      padding: 4px 0 4px 24px;
+      position: relative;
+      font-size: 14.5px;
+    }
+
+    .checklist li::before {
+      content: '[ ]';
+      position: absolute;
+      left: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .divider {
+      border: none;
+      border-top: var(--rule);
+      margin: 48px 0;
+    }
+
+    .section-num {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--ink-light);
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.08em;
+    }
+
+    blockquote {
+      border-left: 3px solid var(--border);
+      padding: 8px 20px;
+      margin: 20px 0;
+      color: var(--ink-muted);
+      font-style: italic;
+      font-size: 15px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    ul li {
+      margin-bottom: 6px;
+    }
+
+    ol {
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    ol li {
+      margin-bottom: 6px;
+    }
+
+    .doc-footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 2px solid var(--ink);
+      font-size: 13px;
+      color: var(--ink-muted);
+      font-family: 'Courier New', monospace;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .ref-list {
+      font-size: 13px;
+      color: var(--ink-muted);
+      line-height: 2;
+    }
+
+    .ref-list a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .ref-list a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="doc-header">
+    <div class="course-tag">MSS301 &nbsp;&middot;&nbsp; Microservices Development with Java</div>
+    <h1>Chapter 13: Distributed Data<br>Part 3 - Saga Pattern</h1>
+    <div class="subtitle">Quản lý distributed transaction bằng chuỗi local transaction kèm compensation</div>
+    <div class="meta-row">
+      <span data-label="Stack">Spring Boot 3.x, RabbitMQ, Kafka, PostgreSQL</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-title">Nội dung phần này</div>
+    <ol>
+      <li><a href="#s1">Vấn đề: Distributed Transaction trong Microservices</a>
+        <ol>
+          <li class="sub"><a href="#s1-1">Bài toán kinh điển: Đặt hàng E-commerce</a></li>
+          <li class="sub"><a href="#s1-2">Ý tưởng cốt lõi của Saga Pattern</a></li>
+          <li class="sub"><a href="#s1-3">Bài toán trong TalentHub</a></li>
+        </ol>
+      </li>
+      <li><a href="#s2">Saga Pattern: định nghĩa và nguyên tắc</a>
+        <ol>
+          <li class="sub"><a href="#s2-1">Nguồn gốc và định nghĩa</a></li>
+          <li class="sub"><a href="#s2-2">Compensating Transaction</a></li>
+        </ol>
+      </li>
+      <li><a href="#s3">Choreography vs Orchestration</a>
+        <ol>
+          <li class="sub"><a href="#s3-1">Choreography-based Saga</a></li>
+          <li class="sub"><a href="#s3-2">Orchestration-based Saga</a></li>
+        </ol>
+      </li>
+      <li><a href="#s4">Kịch bản Demo Saga trong TalentHub: Nộp hồ sơ ứng tuyển</a>
+        <ol>
+          <li class="sub"><a href="#s4-1">Tình huống: Giữ chỗ slot ứng tuyển (Reserved Slot)</a></li>
+          <li class="sub"><a href="#s4-2">Thiết kế Compensation Chain (Chuỗi hoàn tác)</a></li>
+        </ol>
+      </li>
+      <li><a href="#s5">Triển khai Choreography Saga cho TalentHub</a></li>
+      <li><a href="#s6">Triển khai Orchestration Saga cho TalentHub</a></li>
+      <li><a href="#s7">Phân tích chuyên sâu: Choreography vs Orchestration</a></li>
+      <li><a href="#s8">Tóm tắt và câu hỏi ôn tập</a></li>
+    </ol>
+  </nav>
+
+
+  <!-- ============================================================ -->
+  <h2 id="s1"><span class="section-num">01</span>Vấn đề: Distributed Transaction trong Microservices</h2>
+
+  <h3 id="s1-1">1.1. Bài toán kinh điển: Đặt hàng E-commerce</h3>
+  <p>Trong kiến trúc microservices, một nghiệp vụ thường trải dài qua nhiều service khác nhau, mỗi service có database
+    riêng. Ví dụ, khi đặt một đơn hàng:</p>
+  <ol>
+    <li><strong>Order service</strong> tạo đơn hàng</li>
+    <li><strong>Payment service</strong> trừ tiền khách hàng</li>
+    <li><strong>Inventory service</strong> trừ số lượng tồn kho</li>
+    <li><strong>Shipping service</strong> tạo lệnh vận chuyển</li>
+  </ol>
+  <p>Tuy nhiên, do mỗi service quản lý cơ sở dữ liệu riêng, hệ thống không thể sử dụng transaction truyền thống để đảm
+    bảo tính toàn vẹn cho toàn bộ các bước. Nếu bước 3 (trừ tồn kho) thất bại do hết hàng, khoản tiền đã bị trừ ở bước 2
+    cần một cơ chế để hoàn trả.</p>
+
+  <p>Đây chính là bài toán mà <strong>Saga Pattern</strong> giải quyết: đảm bảo tính nhất quán dữ liệu xuyên suốt nhiều
+    service, mà không cần distributed transaction (kiểu 2PC - vốn phức tạp, khóa tài nguyên lâu, không phù hợp cho hệ
+    thống phân tán quy mô lớn).</p>
+
+  <h3 id="s1-2">1.2. Ý tưởng cốt lõi của Saga Pattern</h3>
+  <p>Một saga là một chuỗi các <strong>local transaction</strong> (transaction cục bộ trong từng service). Mỗi bước:</p>
+  <ul>
+    <li>Nếu <strong>thành công</strong>, hệ thống sẽ kích hoạt bước tiếp theo của quy trình.</li>
+    <li>Nếu <strong>thất bại</strong>, luồng Saga sẽ kích hoạt các <strong>compensating transaction</strong> (giao dịch
+      bù trừ) để hoàn tác những gì các bước trước đã thực hiện trước đó (tương tự khái niệm "undo" theo thứ tự ngược
+      lại).</li>
+  </ul>
+
+  <p>Có 2 cách triển khai chính:</p>
+  <ul>
+    <li><strong>Choreography (biên đạo):</strong> các service tự lắng nghe event của nhau và tự quyết định hành động
+      tiếp theo, không có nhạc trưởng.</li>
+    <li><strong>Orchestration (điều phối):</strong> có 1 "nhạc trưởng" trung tâm (Saga Orchestrator) ra lệnh cho từng
+      service làm gì, theo dõi toàn bộ tiến trình.</li>
+  </ul>
+
+  <p>Hãy xem sơ đồ minh họa kiểu Orchestration - dễ hình dung hơn cho người mới:</p>
+  <img src="orchestration.png" alt="Saga Orchestration"
+    style="max-width: 100%; border: var(--rule); margin: 20px 0; border-radius: 8px;">
+
+  <h4>Giải thích ví dụ trong sơ đồ</h4>
+  <p>Kịch bản: khách đặt một đơn hàng, nhưng bước kiểm tra kho lại phát hiện hết hàng.</p>
+  <ol>
+    <li>Order service tạo đơn với trạng thái <code>PENDING</code></li>
+    <li>Payment service trừ tiền khách hàng thành công</li>
+    <li>Inventory service cố gắng trừ tồn kho nhưng thất bại (hết hàng)</li>
+  </ol>
+  <p>Vì bước 3 thất bại, saga orchestrator phải "quay ngược lại" - chạy các compensating transaction theo thứ tự ngược
+    với thứ tự đã thực hiện:</p>
+  <ul>
+    <li>Hoàn tiền lại cho khách (bù trừ cho bước 2)</li>
+    <li>Cập nhật đơn hàng thành <code>CANCELLED</code> (bù trừ cho bước 1)</li>
+  </ul>
+  <div class="callout note">
+    <div class="callout-label">Lưu ý</div>
+    <p>Bước 3 (Inventory) không cần bù trừ vì nó chưa từng thành công - không có gì để hoàn tác.</p>
+  </div>
+
+  <h3 id="s1-3">1.3. Bài toán trong TalentHub</h3>
+  <p>Tương tự như E-commerce, trong monolith TalentHub, khi candidate nộp đơn, tất cả logic nằm trong một method với một
+    <code>@Transactional</code>:
+  </p>
+
+  <pre><code>@Transactional
+public void submitApplication(SubmitRequest req) {
+    // 1. Validate job con mo
+    Job job = jobRepo.findById(req.jobId());
+
+    // 2. Kiem tra candidate khong trung
+    Candidate candidate = candidateRepo.findById(req.candidateId());
+
+    // 3. Tao application
+    Application app = new Application(candidate, job);
+    applicationRepo.save(app);
+
+    // 4. Gui email xac nhan
+    emailService.sendConfirmation(candidate.getEmail(), app);
+
+    // 5. Kich hoat parse CV
+    cvParserService.parse(candidate.getCvFile());
+}
+// Neu bat ky buoc nao fail, toan bo rollback.</code></pre>
+
+  <p>Với microservices, mỗi bước trên thuộc một service khác, có database riêng. Không thể dùng một
+    <code>@Transactional</code> bao trùm tất cả. Vậy làm sao đảm bảo tính nhất quán khi một bước trung gian thất bại?
+  </p>
+
+  <h3>Tại sao 2PC không phù hợp?</h3>
+
+  <p>Two-Phase Commit (2PC) yêu cầu một transaction coordinator khóa tài nguyên trên tất cả participant cho đến khi tất
+    cả sẵn sàng commit. Trong microservices:</p>
+
+  <ul>
+    <li><strong>Giảm availability:</strong> Nếu một participant chậm hoặc down, toàn bộ transaction bị block (theo CAP
+      theorem, 2PC chọn Consistency trên Availability).</li>
+    <li><strong>Không scale:</strong> Lock tài nguyên cross-service tạo bottleneck nghiêm trọng khi hệ thống mở rộng.
+    </li>
+    <li><strong>Coupling chặt:</strong> Tất cả participant phải support XA protocol. Hầu hết message broker và NoSQL
+      database không hỗ trợ.</li>
+  </ul>
+
+  <p>Richardson kết luận: <em>"2PC is not an option for modern microservice applications"</em> (Richardson, 2018, Ch.
+    4).</p>
+
+
+  <!-- ============================================================ -->
+  <h2 id="s2"><span class="section-num">02</span>Saga Pattern: định nghĩa và nguyên tắc</h2>
+
+  <h3 id="s2-1">2.1. Nguồn gốc và định nghĩa</h3>
+
+  <p>Khái niệm Saga được đề xuất lần đầu bởi Hector Garcia-Molina và Kenneth Salem trong bài báo "Sagas" (ACM SIGMOD,
+    1987). Ban đầu nó được thiết kế cho long-lived transaction trong database đơn lẻ, sau đó được Chris Richardson áp
+    dụng vào microservices.</p>
+
+  <blockquote>
+    "A saga is a sequence of local transactions. Each local transaction updates the database and publishes a message or
+    event to trigger the next local transaction in the saga. If a local transaction fails, the saga executes a series of
+    compensating transactions that undo the changes made by the preceding local transactions."
+    <br>- Nguồn: Chris Richardson, <em>Microservices Patterns</em>, Ch. 4
+  </blockquote>
+
+  <p>Các đặc tính quan trọng:</p>
+
+  <ul>
+    <li><strong>Mỗi bước là một local transaction:</strong> Mỗi service chỉ commit vào database của chính nó. Không có
+      global lock.</li>
+    <li><strong>Eventual consistency:</strong> Dữ liệu giữa các service nhất quán theo thời gian, không tức thì.</li>
+    <li><strong>Compensation thay vì rollback:</strong> Không thể rollback một transaction đã commit ở service khác.
+      Thay vào đó, thực thi một "compensating transaction" ngược lại để hoàn tác tác động.</li>
+  </ul>
+
+  <h3 id="s2-2">2.2. Compensating Transaction</h3>
+
+  <p>Compensating transaction (giao dịch bù) là một thao tác ngược lại với thao tác đã thực hiện, nhằm hoàn tác tác động
+    của một bước trong saga khi bước sau đó thất bại.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Bước gốc</th>
+        <th>Compensating Transaction</th>
+        <th>Ghi chú</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Tạo Application (status = NEW)</td>
+        <td>Đánh dấu Application = FAILED hoặc xóa</td>
+        <td>Không xóa vật lý, đánh dấu để audit</td>
+      </tr>
+      <tr>
+        <td>Gửi email xác nhận</td>
+        <td>Gửi email sửa lỗi / thông báo hủy</td>
+        <td>Email đã gửi không thể thu hồi; gửi email bổ sung</td>
+      </tr>
+      <tr>
+        <td>Parse CV (tạo parsed data)</td>
+        <td>Xóa parsed data, đánh dấu "invalid"</td>
+        <td>Hoặc giữ lại cho manual review</td>
+      </tr>
+      <tr>
+        <td>Trừ credit ứng viên</td>
+        <td>Hoàn credit</td>
+        <td>Ví dụ mở rộng, không có trong TalentHub</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <div class="callout-label">Không phải mọi bước đều cần compensation</div>
+    <p>Richardson chia các bước saga thành ba loại:</p>
+    <ul>
+      <li><strong>Compensatable transaction:</strong> Bước có thể bị undo (ví dụ: tạo application).</li>
+      <li><strong>Pivot transaction:</strong> Bước quyết định saga thành công hay thất bại. Không cần compensation vì nó
+        là "điểm không quay lại" (ví dụ: commit final).</li>
+      <li><strong>Retriable transaction:</strong> Bước sau pivot, luôn phải thành công (có thể retry). Không cần
+        compensation vì saga đã qua pivot (ví dụ: gửi email thông báo thành công).</li>
+    </ul>
+  </div>
+
+
+  <!-- ============================================================ -->
+  <h2 id="s3"><span class="section-num">03</span>Choreography vs Orchestration</h2>
+
+  <h3 id="s3-1">3.1. Choreography-based Saga</h3>
+
+  <p>Trong choreography, <strong>không có coordinator trung tâm</strong>. Mỗi service lắng nghe event từ service trước,
+    thực hiện local transaction của mình, rồi publish event cho service tiếp theo. Tương tự như một vũ đạo
+    (choreography): Mỗi thành phần tự nhận biết hành động tiếp theo dựa trên các sự kiện phát sinh từ các thành phần
+    khác.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">Choreography Saga: Application Submission (happy path)</div>
+    <div class="mermaid">
+      sequenceDiagram
+      participant AS as Application Service
+      participant NS as Notification Service
+      participant CV as CV Parser Service
+
+      Note over AS: 1. Candidate nộp đơn<br />save Application (NEW)<br />save OutboxEvent
+      AS->>NS: [Event] ApplicationCreated
+      Note over NS: 2. Gửi email xác nhận<br />save notification_log
+
+      AS->>CV: [Event] CVUploaded
+      Note over CV: 3. Download CV từ MinIO<br />Parse bằng Apache Tika<br />Save parsed data
+      CV->>AS: [Event] CVParsed
+
+      Note over AS: 4. Update Application:<br />stage = CV_SCREENING<br />Lưu kết quả parse
+    </div>
+  </div>
+
+  <h3 id="s3-2">3.2. Orchestration-based Saga</h3>
+
+  <p>Trong orchestration, có một <strong>Saga Orchestrator</strong> (thường nằm trong service khởi tạo saga) điều phối
+    toàn bộ luồng. Orchestrator gửi command tới từng service theo thứ tự, đợi response, rồi quyết định bước tiếp theo.
+    Mô hình này tương tự như một nhạc trưởng (orchestrator) điều khiển một dàn nhạc.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">Orchestration Saga: Application Submission (happy path)</div>
+    <div class="mermaid">
+      sequenceDiagram
+      participant Orch as Saga Orchestrator<br />(Application Service)
+      participant JS as Job Service
+      participant CS as Candidate Service
+      participant NS as Notification Service
+      participant CV as CV Parser Service
+
+      Orch->>JS: [1] ValidateJob command
+      JS-->>Orch: JobValidated response
+
+      Orch->>CS: [2] CheckCandidate command
+      CS-->>Orch: CandidateVerified response
+
+      Note over Orch: [3] CreateApplication (local)<br />save Application (NEW)<br />save OutboxEvent
+
+      Orch->>NS: [4] SendConfirmation command
+      NS-->>Orch: ConfirmationSent response
+
+      Orch->>CV: [5] ParseCV command
+      CV-->>Orch: CVParsed response
+
+      Note over Orch: [6] Update Application:<br />stage = CV_SCREENING
+    </div>
+  </div>
+
+        <!-- ============================================================ -->
+  <h2 id="s4"><span class="section-num">04</span>Kịch bản Demo Saga trong TalentHub: Nộp hồ sơ ứng tuyển</h2>
+
+  <h3 id="s4-1">4.1. Tình huống: Giữ chỗ slot ứng tuyển (Reserved Slot)</h3>
+
+  <p>Tình huống phù hợp nhất để áp dụng Saga trong TalentHub là <strong>nộp hồ sơ ứng tuyển với giới hạn số lượng ứng viên</strong> trên một Job Posting. Đây là tài nguyên giới hạn tự nhiên nhất có sẵn trong domain: mỗi Job có <code>applicantCount</code> và <code>maxApplicants</code>. Việc nộp hồ sơ tương đương với việc <strong>giữ chỗ (reserve) một suất ứng tuyển</strong> trên Job đó.</p>
+  <p>Nếu bước xử lý CV (Parse CV) thất bại do file lỗi, suất ứng tuyển này cần được <strong>trả lại (compensate)</strong>. Cấu trúc này ánh xạ trực tiếp vào đúng 4 service hiện tại của bạn, không cần thêm service trung gian nào.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Bước</th>
+        <th>Service</th>
+        <th>Local Transaction</th>
+        <th>Tài nguyên bị tiêu tốn / Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>T1</td>
+        <td><code>application-service</code></td>
+        <td>Tạo Application với status <code>PENDING</code></td>
+        <td>Không tiêu tốn gì, chỉ là điểm khởi phát.</td>
+      </tr>
+      <tr>
+        <td>T2</td>
+        <td><code>job-service</code></td>
+        <td>Kiểm tra Job đang <code>OPEN</code> và <code>applicantCount &lt; maxApplicants</code>. Tăng <code>applicantCount</code>.</td>
+        <td><strong>Suất ứng tuyển trên job (Job Slot)</strong>. Đây là tài nguyên giới hạn.</td>
+      </tr>
+      <tr>
+        <td>T3</td>
+        <td><code>cv-parser-service</code></td>
+        <td>Gọi <code>candidate-service</code> lấy CV, phân tích file, trích xuất kỹ năng.</td>
+        <td>Không tiêu tốn, nhưng <strong>có thể thất bại</strong> (file lỗi định dạng, không đọc được).</td>
+      </tr>
+      <tr>
+        <td>T4</td>
+        <td><code>notification-service</code></td>
+        <td>Gửi thông báo kết quả ứng tuyển cho ứng viên.</td>
+        <td>Bước kết thúc, không publish tiếp.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 id="s4-2">4.2. Thiết kế Compensation Chain (Chuỗi hoàn tác)</h3>
+
+  <p>Nếu bước T3 (Parse CV) thất bại, hệ thống <strong>bắt buộc phải chạy compensating transaction</strong> để hoàn trả tài nguyên:</p>
+  <ul>
+    <li><strong><code>job-service</code> (C1)</strong>: Giảm lại <code>applicantCount</code> đã tăng ở bước 2.</li>
+    <li><strong><code>application-service</code> (C2)</strong>: Chuyển trạng thái Application sang <code>CANCELLED</code> hoặc <code>NEEDS_MANUAL_REVIEW</code>.</li>
+  </ul>
+  
+  <p>Nếu không hoàn trả, Job đó sẽ bị tính sai số lượng ứng viên thực tế (ghost applications), có thể khiến Job bị tự động đóng sớm dù chưa đủ ứng viên hợp lệ.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">Saga Flow: Nộp hồ sơ giới hạn số lượng (Happy Path & Compensation)</div>
+    <div class="mermaid">
+      sequenceDiagram
+      actor C as Candidate
+      participant AS as Application Svc
+      participant JS as Job Svc
+      participant CV as CV Parser Svc
+      participant NS as Notification Svc
+
+      C->>AS: POST /apply
+      Note over AS: [T1] save app (PENDING)<br/>save OutboxEvent
+      AS-->>C: 202 Accepted
+
+      Note over AS: Outbox Relay<br/>(Background Job)
+      AS-)JS: Event: ApplicationCreated
+      Note over JS: [T2] Check limit &<br/>increase applicantCount
+      
+      alt Happy Path (Slot Available)
+          JS-)CV: Event: JobSlotReserved
+          Note over CV: [T3] Download & Parse CV
+          
+          alt CV Valid
+              CV-)AS: Event: CVParsed
+              Note over AS: Update app (CV_SCREENING)
+              AS-)NS: Event: ApplicationCompleted
+              Note over NS: [T4] Send Success Email
+          else CV Invalid (Corrupted)
+              CV-)JS: Event: CVParseFailed
+              Note over JS: [C1] Decrease applicantCount<br/>(COMPENSATION)
+              JS-)AS: Event: JobSlotReleased
+              Note over AS: [C2] Update app (CANCELLED)<br/>(COMPENSATION)
+              AS-)NS: Event: ApplicationFailed
+              Note over NS: Send Error Email
+          end
+
+      else Slot Full / Job Closed
+          JS-)AS: Event: JobSlotRejected
+          Note over AS: Update app (REJECTED)
+          AS-)NS: Event: ApplicationFailed
+          Note over NS: Send Reject Email
+      end
+    </div>
+  </div>
+
+
+  <!-- ============================================================ -->
+  <h2 id="s5"><span class="section-num">05</span>Triển khai Choreography Saga cho TalentHub</h2>
+
+  <p>Phần này hướng dẫn triển khai Choreography Saga cho bài toán <strong>nộp hồ sơ ứng tuyển với giới hạn slot</strong> trong TalentHub. Các service giao tiếp qua RabbitMQ (Topic Exchange), mỗi service tự lắng nghe event và tự quyết định hành động. Toàn bộ event record được đặt chung trong module <code>common-event</code> để tất cả service sử dụng thống nhất.</p>
+
+  <h3>5.0. Tổng quan kiến trúc</h3>
+
+  <p>Saga bao gồm 4 service, giao tiếp qua một Topic Exchange duy nhất (<code>talenthub.events</code>). Mỗi service khai báo queue riêng và binding vào routing key cần lắng nghe.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Vai trò trong Saga</th>
+        <th>Event publish</th>
+        <th>Event consume</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>application-service</code></td>
+        <td>Khởi tạo Saga (T1), lắng nghe kết quả (C2)</td>
+        <td><code>application.created</code>, <code>job.created.increment</code></td>
+        <td><code>cv.parsed.success</code>, <code>cv.parsed.failed</code>, <code>job.slot.rejected</code></td>
+      </tr>
+      <tr>
+        <td><code>job-service</code></td>
+        <td>Giữ slot (T2), Compensation (C1)</td>
+        <td><code>job.slot.reserved</code>, <code>job.slot.rejected</code></td>
+        <td><code>job.created.increment</code>, <code>cv.parsed.failed</code></td>
+      </tr>
+      <tr>
+        <td><code>cv-parser-service</code></td>
+        <td>Phân tích CV (T3)</td>
+        <td><code>cv.parsed.success</code>, <code>cv.parsed.failed</code></td>
+        <td><code>job.slot.reserved</code></td>
+      </tr>
+      <tr>
+        <td><code>notification-service</code></td>
+        <td>Gửi email thông báo</td>
+        <td>Không publish</td>
+        <td><code>job.slot.reserved</code>, <code>job.slot.rejected</code>, <code>cv.parsed.failed</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>5.1. Module common-event: Định nghĩa Event dùng chung</h3>
+
+  <p>Toàn bộ event trong Saga được định nghĩa dưới dạng <code>record</code> (Java 16+) trong module <code>shared/common-event</code>. Các service khác chỉ cần thêm dependency vào module này để sử dụng chung, tránh việc mỗi service tự định nghĩa DTO riêng lẻ.</p>
+
+  <div class="filename">pom.xml (Dependency cần thêm vào mỗi service)</div>
+  <pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;com.talenthub&lt;/groupId&gt;
+    &lt;artifactId&gt;common-events&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+
+  <h4>ApplicationSubmittedEvent</h4>
+  <p>Event được publish khi candidate nộp đơn. Chứa đầy đủ thông tin để các service phía sau xử lý mà không cần gọi ngược lại.</p>
+  <div class="filename">ApplicationSubmittedEvent.java (shared/common-event/src/.../events)</div>
+  <pre><code>package com.talenthub.events;
+
+import java.util.UUID;
+
+public record ApplicationSubmittedEvent(
+        UUID applicationId,
+        UUID jobId,
+        UUID candidateId,
+        String cvFileUrl,
+        String candidateEmail,
+        String candidateFullName
+) {
+}</code></pre>
+
+  <h4>JobSlotReservedEvent</h4>
+  <p>Được publish bởi job-service khi slot còn trống. Mang theo thông tin để cv-parser và notification-service cùng sử dụng.</p>
+  <div class="filename">JobSlotReservedEvent.java</div>
+  <pre><code>package com.talenthub.events;
+
+import java.util.UUID;
+
+public record JobSlotReservedEvent(
+        UUID applicationId,
+        UUID jobId,
+        UUID candidateId,
+        String candidateEmail,
+        String candidateFullName,
+        String cvFileUrl,
+        String jobTitle,
+        int currentCount,
+        int maxApplicants
+) {
+}</code></pre>
+
+  <h4>JobSlotRejectedEvent</h4>
+  <p>Được publish bởi job-service khi job đã hết slot. Cả application-service và notification-service đều lắng nghe event này.</p>
+  <div class="filename">JobSlotRejectedEvent.java</div>
+  <pre><code>package com.talenthub.events;
+
+import java.util.UUID;
+
+public record JobSlotRejectedEvent(
+        UUID applicationId,
+        UUID jobId,
+        UUID candidateId,
+        String candidateEmail,
+        String candidateFullName,
+        String reason
+) {
+}</code></pre>
+
+  <h4>CVParsedEvent</h4>
+  <p>Được publish khi phân tích CV thành công. Chỉ cần <code>applicationId</code> để application-service cập nhật trạng thái.</p>
+  <div class="filename">CVParsedEvent.java</div>
+  <pre><code>package com.talenthub.events;
+
+import java.util.UUID;
+
+public record CVParsedEvent(
+        UUID applicationId
+) {
+}</code></pre>
+
+  <h4>CVParseFailedEvent</h4>
+  <p>Được publish khi phân tích CV thất bại. Đây là event kích hoạt chuỗi compensation: job-service giảm slot, application-service chuyển REJECTED, notification-service gửi email thông báo.</p>
+  <div class="filename">CVParseFailedEvent.java</div>
+  <pre><code>package com.talenthub.events;
+
+import java.util.UUID;
+
+public record CVParseFailedEvent(
+        UUID applicationId,
+        UUID jobId,
+        String candidateEmail,
+        String candidateFullName,
+        String reason
+) {
+}</code></pre>
+
+  <div class="callout note">
+    <div class="callout-label">Tại sao dùng record?</div>
+    <p>Java <code>record</code> tự động sinh constructor, accessor, <code>equals()</code>, <code>hashCode()</code>, <code>toString()</code>. Gọn, immutable, và Jackson có thể serialize/deserialize trực tiếp. Lưu ý: accessor của record là <code>applicationId()</code> thay vì <code>getApplicationId()</code> như class thông thường.</p>
+  </div>
+
+
+  <h3>5.2. Application Service: Khởi tạo Saga (Bước T1) với Outbox Pattern</h3>
+
+  <p>Khi candidate gọi API nộp đơn, application-service tạo Application và lưu đồng thời 2 OutboxEvent trong cùng một transaction. Outbox Pattern đảm bảo rằng dữ liệu trong DB và message gửi đi luôn nhất quán.</p>
+
+  <p>Bước này không gửi message trực tiếp vào RabbitMQ. Thay vào đó, một background job (<code>MessageRelayListener</code>) sẽ đọc bảng <code>outbox_events</code> và gửi message đi.</p>
+
+  <h4>MessageRelayListener (Outbox Relay)</h4>
+  <p>Đây là background job chạy mỗi 10 giây, đọc các outbox event chưa được gửi và publish chúng vào RabbitMQ.</p>
+  <div class="filename">MessageRelayListener.java (application-service/src/.../infrastructure/outbox)</div>
+  <pre><code>package com.talenthub.application.infrastructure.outbox;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.talenthub.application.domain.model.OutboxEvent;
+import com.talenthub.application.domain.repository.OutboxEventRepository;
+import com.talenthub.application.infrastructure.messaging.ApplicationEventPublisher;
+import com.talenthub.application.infrastructure.messaging.RabbitMQConfig;
+import com.talenthub.events.ApplicationCreatedEvent;
+import com.talenthub.events.ApplicationSubmittedEvent;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class MessageRelayListener {
+
+    private final OutboxEventRepository outboxEventRepository;
+    private final RabbitTemplate rabbitTemplate;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ObjectMapper objectMapper;
+
+    @Scheduled(fixedRate = 10000)
+    public void pollAndPublish() {
+
+        List&lt;OutboxEvent&gt; outboxEvents = outboxEventRepository.findUnPublished(false);
+
+        outboxEvents.forEach(outboxEvent -&gt; {
+            try {
+                String routingKey = outboxEvent.getEventType();
+                switch (routingKey) {
+                    case "application.created": {
+                        eventPublisher.publishApplicationCreated(
+                            objectMapper.readValue(outboxEvent.getPayload(),
+                                ApplicationCreatedEvent.class));
+
+                        outboxEvent.markProcessed();
+                        outboxEventRepository.save(outboxEvent);
+                        log.info("Published outbox event: type={}, aggregateId={}",
+                                outboxEvent.getEventType(), outboxEvent.getAggregateId());
+                        break;
+                    }
+                    case "job.created.increment": {
+                        ApplicationSubmittedEvent event = objectMapper.readValue(
+                            outboxEvent.getPayload(), ApplicationSubmittedEvent.class);
+                        rabbitTemplate.convertAndSend(
+                            RabbitMQConfig.EXCHANGE_NAME, "job.created.increment", event);
+
+                        outboxEvent.markProcessed();
+                        outboxEventRepository.save(outboxEvent);
+                        log.info("Published outbox event: type={}, aggregateId={}",
+                                outboxEvent.getEventType(), outboxEvent.getAggregateId());
+                        break;
+                    }
+                }
+            } catch (Exception ex) {
+                log.error("Exception in publish outbox event", ex);
+            }
+        });
+    }
+}</code></pre>
+
+  <div class="callout warn">
+    <div class="callout-label">Outbox Relay gửi 2 loại event</div>
+    <p><code>application.created</code>: gửi cho notification-service (thông báo đơn đã được tiếp nhận).<br>
+    <code>job.created.increment</code>: gửi cho job-service (yêu cầu tăng applicant count và reserve slot). Đây chính là điểm khởi đầu của luồng Saga.</p>
+  </div>
+
+
+  <h3>5.3. Job Service: Giữ slot và kiểm tra giới hạn (Bước T2)</h3>
+
+  <p>Job-service lắng nghe event <code>job.created.increment</code>. Khi nhận được, nó kiểm tra số lượng ứng viên hiện tại so với giới hạn (<code>maxApplicants</code>). Nếu còn slot, tăng <code>applicantCount</code> và publish <code>job.slot.reserved</code>. Nếu hết slot, giảm lại và publish <code>job.slot.rejected</code>.</p>
+
+  <p>Ngoài ra, job-service còn lắng nghe <code>cv.parsed.failed</code> để thực hiện compensation (giảm lại applicant count đã tăng trước đó).</p>
+
+  <div class="filename">JobSagaListener.java (job-service/src/.../infrastructure/messaging)</div>
+  <pre><code>package com.talenthub.job.infrastructure.messaging;
+
+import com.talenthub.events.ApplicationSubmittedEvent;
+import com.talenthub.events.CVParseFailedEvent;
+import com.talenthub.events.JobSlotRejectedEvent;
+import com.talenthub.events.JobSlotReservedEvent;
+import com.talenthub.job.domain.aggregate.JobAggregate;
+import com.talenthub.job.domain.exception.JobNotFoundException;
+import com.talenthub.job.domain.repository.JobRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class JobSagaListener {
+
+    private final JobRepository jobRepository;
+    private final RabbitTemplate rabbitTemplate;
+
+    // ===== BUOC T2: Reserve Slot =====
+    @RabbitListener(bindings = {@QueueBinding(
+        value = @Queue(name = "job.application-created", durable = "true"),
+        exchange = @Exchange(name = "talenthub.events", type = "topic"),
+        key = "job.created.increment")})
+    @Transactional
+    public void updateCountApplicant(ApplicationSubmittedEvent submittedEvent) {
+        log.info("Received job.created.increment: applicationId={}, jobId={}",
+                submittedEvent.applicationId(), submittedEvent.jobId());
+
+        Optional&lt;JobAggregate&gt; optional = jobRepository.findById(submittedEvent.jobId());
+
+        JobAggregate job = optional.orElseThrow(() -&gt; {
+            throw new JobNotFoundException(submittedEvent.jobId());
+        });
+
+        job.incrementApplicantCount();
+
+        if (job.getApplicantCount() &lt;= job.getMaxApplicants()) {
+            // CON SLOT: luu va publish job.slot.reserved
+            jobRepository.save(job);
+
+            JobSlotReservedEvent reservedEvent = new JobSlotReservedEvent(
+                    submittedEvent.applicationId(),
+                    submittedEvent.jobId(),
+                    submittedEvent.candidateId(),
+                    submittedEvent.candidateEmail(),
+                    submittedEvent.candidateFullName(),
+                    submittedEvent.cvFileUrl(),
+                    job.getTitle(),
+                    job.getApplicantCount(),
+                    job.getMaxApplicants()
+            );
+
+            rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE_NAME,
+                RabbitMQConfig.RK_JOB_SLOT_RESERVED,
+                reservedEvent);
+
+            log.info("Published job.slot.reserved: applicationId={}, count={}/{}",
+                    submittedEvent.applicationId(),
+                    job.getApplicantCount(), job.getMaxApplicants());
+        } else {
+            // HET SLOT: giam lai va publish job.slot.rejected
+            job.decrementApplicantCount();
+            jobRepository.save(job);
+            JobSlotRejectedEvent rejectedEvent = new JobSlotRejectedEvent(
+                    submittedEvent.applicationId(),
+                    submittedEvent.jobId(),
+                    submittedEvent.candidateId(),
+                    submittedEvent.candidateEmail(),
+                    submittedEvent.candidateFullName(),
+                    "Job da du so luong ung vien toi da ("
+                        + job.getMaxApplicants() + ")"
+            );
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE_NAME,
+                    RabbitMQConfig.RK_JOB_SLOT_REJECTED,
+                    rejectedEvent);
+            log.info("Published job.slot.rejected: applicationId={}, max={}",
+                    submittedEvent.applicationId(), job.getMaxApplicants());
+        }
+    }
+
+    // ===== COMPENSATION C1: CV parse that bai, giam lai applicant count =====
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(name = "job.cv.parsed.failed.queue", durable = "true"),
+            exchange = @Exchange(name = "talenthub.events", type = "topic"),
+            key = "cv.parsed.failed"))
+    @Transactional
+    public void onCvParsedFailed(CVParseFailedEvent event) {
+        log.info("Received cv.parsed.failed (compensation): applicationId={}, jobId={}, reason={}",
+                event.applicationId(), event.jobId(), event.reason());
+
+        JobAggregate job = jobRepository.findById(event.jobId())
+                .orElseThrow(() -&gt; new JobNotFoundException(event.jobId()));
+
+        job.decrementApplicantCount();
+        jobRepository.save(job);
+
+        log.info("Compensation completed: decremented applicant count for jobId={}, new count={}",
+                event.jobId(), job.getApplicantCount());
+    }
+}</code></pre>
+
+  <div class="callout note">
+    <div class="callout-label">Tại sao @Transactional rất quan trọng ở đây?</div>
+    <p>Khi một listener cập nhật dữ liệu vào database (tăng/giảm <code>applicantCount</code>), cần đảm bảo rằng dữ liệu được commit thành công trước khi RabbitMQ acknowledge message. Nếu không có <code>@Transactional</code>, có thể xảy ra tình huống: message đã được acknowledge nhưng database chưa commit, dẫn đến mất dữ liệu.</p>
+  </div>
+
+
+  <h3>5.4. CV Parser Service: Xử lý CV (Bước T3)</h3>
+
+  <p>CV-parser lắng nghe event <code>job.slot.reserved</code>. Khi nhận được, nó tải CV xuống và phân tích. Nếu thành công, publish <code>cv.parsed.success</code>. Nếu thất bại, publish <code>cv.parsed.failed</code> để kích hoạt chuỗi compensation.</p>
+
+  <div class="filename">CvParserListener.java (cv-parser-service/src/.../infrastructure/messaging)</div>
+  <pre><code>package com.talenthub.cvparser.infrastructure.messaging;
+
+import com.talenthub.events.CVParseFailedEvent;
+import com.talenthub.events.CVParsedEvent;
+import com.talenthub.events.JobSlotReservedEvent;
+import com.talenthub.cvparser.service.MockCvParserService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class CvParserListener {
+
+    private final MockCvParserService cvParsingService;
+    private final RabbitTemplate rabbitTemplate;
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "cv.job.slot.reserved.queue", durable = "true"),
+            exchange = @Exchange(value = "talenthub.events", type = "topic"),
+            key = "job.slot.reserved"
+    ))
+    public void onJobSlotReserved(JobSlotReservedEvent event) {
+        log.info("Received JobSlotReservedEvent for applicationId: {}, candidateId: {}",
+                event.applicationId(), event.candidateId());
+
+        try {
+            // T3: Parse CV
+            cvParsingService.processCvParsing(event.candidateId(), event.cvFileUrl());
+
+            // THANH CONG: publish cv.parsed.success
+            CVParsedEvent successEvent = new CVParsedEvent(event.applicationId());
+            rabbitTemplate.convertAndSend("talenthub.events", "cv.parsed.success", successEvent);
+            log.info("Successfully published CVParsedEvent for applicationId: {}",
+                    event.applicationId());
+
+        } catch (Exception e) {
+            // THAT BAI: publish cv.parsed.failed de kich hoat Compensation
+            CVParseFailedEvent failedEvent = new CVParseFailedEvent(
+                event.applicationId(),
+                event.jobId(),
+                event.candidateEmail(),
+                event.candidateFullName(),
+                "Loi phan tich file: " + e.getMessage()
+            );
+            rabbitTemplate.convertAndSend("talenthub.events", "cv.parsed.failed", failedEvent);
+            log.error("Published CVParseFailedEvent for applicationId: {}. Reason: {}",
+                    event.applicationId(), e.getMessage());
+        }
+    }
+}</code></pre>
+
+  <div class="callout danger">
+    <div class="callout-label">Đây chính là Pivot Transaction</div>
+    <p>Bước T3 (Parse CV) là điểm quyết định Saga thành công hay thất bại. Nếu <code>processCvParsing()</code> ném exception, event <code>cv.parsed.failed</code> sẽ lan truyền tới <strong>3 service cùng lúc</strong> (job-service, application-service, notification-service) để thực hiện compensation song song.</p>
+  </div>
+
+
+  <h3>5.5. Application Service: Lắng nghe kết quả và Compensation (Bước C2)</h3>
+
+  <p>Application-service lắng nghe 3 loại event kết quả:</p>
+  <ul>
+    <li><code>cv.parsed.success</code>: CV hợp lệ, chuyển application sang <code>CV_SCREENING</code>.</li>
+    <li><code>cv.parsed.failed</code>: CV lỗi, chuyển application sang <code>REJECTED</code> (Compensation C2).</li>
+    <li><code>job.slot.rejected</code>: Hết slot, chuyển application sang <code>REJECTED</code>.</li>
+  </ul>
+
+  <div class="filename">ApplicationResultListener.java (application-service/src/.../infrastructure/messaging)</div>
+  <pre><code>package com.talenthub.application.infrastructure.messaging;
+
+import com.talenthub.application.domain.model.Application;
+import com.talenthub.application.domain.model.PipelineStage;
+import com.talenthub.application.domain.repository.ApplicationRepository;
+import com.talenthub.events.CVParseFailedEvent;
+import com.talenthub.events.CVParsedEvent;
+import com.talenthub.events.JobSlotRejectedEvent;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class ApplicationResultListener {
+
+    private final ApplicationRepository applicationRepository;
+
+    // ===== HAPPY PATH: CV parse thanh cong =====
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "application.cv.parsed.success.queue", durable = "true"),
+            exchange = @Exchange(value = "talenthub.events", type = "topic"),
+            key = "cv.parsed.success"
+    ))
+    @Transactional
+    public void onCvParsedSuccess(CVParsedEvent event) {
+        log.info("Received CVParsedEvent for applicationId: {}", event.applicationId());
+
+        Application app = applicationRepository.findById(event.applicationId())
+            .orElseThrow(() -&gt; new RuntimeException("App not found"));
+        if (app.getCurrentStage() == PipelineStage.NEW) {
+            app.advanceStage(PipelineStage.CV_SCREENING);
+            applicationRepository.save(app);
+            log.info("Application {} advanced to CV_SCREENING.", app.getId());
+        }
+    }
+
+    // ===== COMPENSATION C2: CV parse that bai =====
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "application.cv.parsed.failed.queue", durable = "true"),
+            exchange = @Exchange(value = "talenthub.events", type = "topic"),
+            key = "cv.parsed.failed"
+    ))
+    @Transactional
+    public void onCvParsedFailed(CVParseFailedEvent event) {
+        log.info("Received CVParseFailedEvent for applicationId: {}, reason: {}",
+                event.applicationId(), event.reason());
+
+        Application app = applicationRepository.findById(event.applicationId())
+                .orElseThrow(() -&gt; new RuntimeException(
+                    "Application not found: " + event.applicationId()));
+
+        app.advanceStage(PipelineStage.REJECTED);
+        app.addNote("SYSTEM", "CV khong phu hop: " + event.reason());
+        applicationRepository.save(app);
+
+        log.info("Application {} updated to REJECTED due to CV parse failure.", app.getId());
+    }
+
+    // ===== JOB HET SLOT: Application bi tu choi =====
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "application.job.slot.rejected.queue", durable = "true"),
+            exchange = @Exchange(value = "talenthub.events", type = "topic"),
+            key = "job.slot.rejected"
+    ))
+    @Transactional
+    public void onJobSlotRejected(JobSlotRejectedEvent event) {
+        log.info("Received JobSlotRejectedEvent for applicationId: {}, reason: {}",
+                event.applicationId(), event.reason());
+
+        Application app = applicationRepository.findById(event.applicationId())
+                .orElseThrow(() -&gt; new RuntimeException(
+                    "Application not found: " + event.applicationId()));
+
+        app.advanceStage(PipelineStage.REJECTED);
+        app.addNote("SYSTEM", "Het slot: " + event.reason());
+        applicationRepository.save(app);
+
+        log.info("Application {} updated to REJECTED due to job slot full.", app.getId());
+    }
+}</code></pre>
+
+  <div class="callout note">
+    <div class="callout-label">Đặc điểm Choreography thể hiện rõ ở đây</div>
+    <p>Application-service <strong>không biết</strong> ai đã gửi event <code>cv.parsed.failed</code>. Nó chỉ biết rằng: "CV đã thất bại, tôi cần chuyển application sang REJECTED". Đồng thời, <strong>job-service cũng lắng nghe cùng event đó</strong> để giảm lại slot. Hai hành động compensation diễn ra song song, độc lập với nhau.</p>
+  </div>
+
+
+  <h3>5.6. Notification Service: Gửi email thông báo</h3>
+
+  <p>Notification-service lắng nghe 3 loại event để gửi email tương ứng. Đây là bước cuối cùng trong Saga, không publish thêm event nào (Retriable Transaction theo phân loại của Richardson).</p>
+
+  <h4>Case 1: Đã tiếp nhận đơn, CV đang được xử lý</h4>
+  <div class="filename">SlotReservedConsumer.java (notification-service/src/.../infrastructure/messaging)</div>
+  <pre><code>package com.talenthub.notification.infrastructure.messaging;
+
+import com.talenthub.events.JobSlotReservedEvent;
+import com.talenthub.notification.infrastructure.email.EmailService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class SlotReservedConsumer {
+
+    private final EmailService emailService;
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(name = "notification.slot-reserved", durable = "true"),
+            exchange = @Exchange(value = RabbitMQConfig.EXCHANGE_NAME, type = "topic"),
+            key = "job.slot.reserved"))
+    public void handleSlotReserved(JobSlotReservedEvent event) {
+        log.info("Received job.slot.reserved: applicationId={}, jobId={}, count={}/{}",
+                event.applicationId(), event.jobId(),
+                event.currentCount(), event.maxApplicants());
+
+        emailService.sendApplicationReceived(
+                event.candidateEmail(),
+                event.candidateFullName(),
+                event.jobTitle(),
+                event.currentCount(),
+                event.maxApplicants()
+        );
+
+        log.info("Sent application-received email to {} for applicationId={}",
+                event.candidateEmail(), event.applicationId());
+    }
+}</code></pre>
+
+  <h4>Case 2: Đã hết slot, từ chối đơn</h4>
+  <div class="filename">SlotRejectedConsumer.java</div>
+  <pre><code>package com.talenthub.notification.infrastructure.messaging;
+
+import com.talenthub.events.JobSlotRejectedEvent;
+import com.talenthub.notification.infrastructure.email.EmailService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class SlotRejectedConsumer {
+
+    private final EmailService emailService;
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(name = "notification.slot-rejected", durable = "true"),
+            exchange = @Exchange(value = RabbitMQConfig.EXCHANGE_NAME, type = "topic"),
+            key = "job.slot.rejected"))
+    public void handleSlotRejected(JobSlotRejectedEvent event) {
+        log.info("Received job.slot.rejected: applicationId={}, jobId={}, reason={}",
+                event.applicationId(), event.jobId(), event.reason());
+
+        emailService.sendSlotFullRejection(
+                event.candidateEmail(),
+                event.candidateFullName(),
+                event.reason()
+        );
+
+        log.info("Sent slot-rejected email to {} for applicationId={}",
+                event.candidateEmail(), event.applicationId());
+    }
+}</code></pre>
+
+  <h4>Case 3: CV không phù hợp (Compensation email)</h4>
+  <div class="filename">CvParseFailedConsumer.java</div>
+  <pre><code>package com.talenthub.notification.infrastructure.messaging;
+
+import com.talenthub.events.CVParseFailedEvent;
+import com.talenthub.notification.infrastructure.email.EmailService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class CvParseFailedConsumer {
+
+    private final EmailService emailService;
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(name = "notification.cv-parse-failed", durable = "true"),
+            exchange = @Exchange(value = RabbitMQConfig.EXCHANGE_NAME, type = "topic"),
+            key = "cv.parsed.failed"))
+    public void handleCvParseFailed(CVParseFailedEvent event) {
+        log.info("Received cv.parsed.failed: applicationId={}, jobId={}, reason={}",
+                event.applicationId(), event.jobId(), event.reason());
+
+        emailService.sendCvNotMatchNotification(
+                event.candidateEmail(),
+                event.candidateFullName(),
+                event.reason()
+        );
+
+        log.info("Sent CV-not-match email to {} for applicationId={}",
+                event.candidateEmail(), event.applicationId());
+    }
+}</code></pre>
+
+
+  <h3>5.7. RabbitMQ Configuration: Jackson JSON Converter</h3>
+
+  <p>Mỗi service cần khai báo một <code>MessageConverter</code> để Spring AMQP tự động serialize Java object thành JSON khi gửi, và deserialize JSON thành Java object khi nhận. Không có bean này, RabbitMQ sẽ gửi message dạng byte[] và gây lỗi deserialization.</p>
+
+  <div class="filename">RabbitMQConfig.java (Mỗi service đều cần có bean này)</div>
+  <pre><code>@Configuration
+public class RabbitMQConfig {
+
+    public static final String EXCHANGE_NAME = "talenthub.events";
+
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return new Jackson2JsonMessageConverter(mapper);
+    }
+}</code></pre>
+
+  <div class="callout success">
+    <div class="callout-label">Tóm tắt luồng Saga</div>
+    <p>
+      <strong>Happy Path:</strong> Application được lưu (T1). Job-service tăng slot và publish <code>job.slot.reserved</code> (T2). CV parse thành công và publish <code>cv.parsed.success</code> (T3). Application chuyển sang <code>CV_SCREENING</code>. Notification-service gửi email tiếp nhận.<br><br>
+      <strong>Compensation (CV thất bại):</strong> CV parse thất bại, publish <code>cv.parsed.failed</code>. Ba service cùng lắng nghe: job-service giảm slot (C1), application-service chuyển <code>REJECTED</code> (C2), notification-service gửi email báo lỗi.<br><br>
+      <strong>Hết slot:</strong> Job-service publish <code>job.slot.rejected</code>. Application-service chuyển <code>REJECTED</code>, notification-service gửi email từ chối.
+    </p>
+  </div>
+
+
+
+  <!-- ============================================================ -->
+  <h2 id="s6"><span class="section-num">06</span>Triển khai Orchestration Saga cho TalentHub</h2>
+
+  <p>Thay vì các service bắn event tự do, <strong>Orchestration</strong> sử dụng một class trung tâm (Saga Orchestrator) đặt tại <code>application-service</code>. Tại đây, chúng ta cũng áp dụng <strong>Outbox Pattern</strong> khi ghi log Command xuống DB nhằm tránh Dual-Write.</p>
+
+  <h3>6.1. Saga Orchestrator Class (Application Service)</h3>
+  <div class="filename">ApplicationSagaOrchestrator.java (Thư mục: application-service/src/.../application)</div>
+  <pre><code>package com.talenthub.application.application;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.talenthub.application.domain.model.Application;
+import com.talenthub.application.domain.model.ApplicationStatus;
+import com.talenthub.application.domain.model.OutboxEvent;
+import com.talenthub.application.infrastructure.persistence.ApplicationRepository;
+import com.talenthub.application.infrastructure.persistence.OutboxRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+@Component
+@RequiredArgsConstructor
+public class ApplicationSagaOrchestrator {
+
+    private final ApplicationRepository applicationRepository;
+    private final OutboxRepository outboxRepository;
+    private final ObjectMapper objectMapper;
+
+    // --- BƯỚC 1: KHỞI TẠO SAGA (Ghi Outbox Command) ---
+    @Transactional
+    public void startSaga(Application app) {
+        app.setStatus(ApplicationStatus.RESERVING_JOB);
+        applicationRepository.save(app);
+        
+        // Yêu cầu Job Service giữ slot thông qua Outbox
+        try {
+            ReserveJobSlotCommand command = new ReserveJobSlotCommand(app.getId(), app.getJobId());
+            String payload = objectMapper.writeValueAsString(command);
+            
+            OutboxEvent outboxEvent = OutboxEvent.create("Application", app.getId(), "ReserveJobSlotCommand", payload);
+            outboxRepository.save(outboxEvent);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi serialize command", e);
+        }
+    }
+
+    // --- BƯỚC 2: LẮNG NGHE KẾT QUẢ TỪ JOB SERVICE ---
+    @RabbitListener(queues = "reply.job.reserve.queue")
+    @Transactional
+    public void handleJobReply(JobReservationReply reply) {
+        Application app = applicationRepository.findById(reply.getApplicationId()).orElseThrow();
+        
+        if (reply.isSuccess()) {
+            app.setStatus(ApplicationStatus.PARSING_CV);
+            applicationRepository.save(app);
+            
+            // Gửi ParseCvCommand qua Outbox (Tương tự hàm trên - Viết tắt ở đây)
+            // ...
+        } else {
+            app.setStatus(ApplicationStatus.REJECTED);
+            app.setFailReason(reply.getReason());
+            applicationRepository.save(app);
+        }
+    }
+
+    // --- BƯỚC 3: LẮNG NGHE KẾT QUẢ TỪ CV PARSER (CÓ COMPENSATION) ---
+    @RabbitListener(queues = "reply.cv.parse.queue")
+    @Transactional
+    public void handleCvReply(CvParseReply reply) {
+        Application app = applicationRepository.findById(reply.getApplicationId()).orElseThrow();
+        
+        if (reply.isSuccess()) {
+            // Hoàn thành Saga
+            app.setStatus(ApplicationStatus.CV_SCREENING);
+            applicationRepository.save(app);
+        } else {
+            // CV LỖI -> TRIGGER COMPENSATION LÙI LẠI
+            // Cập nhật Application thành CANCELLED
+            app.setStatus(ApplicationStatus.CANCELLED);
+            app.setFailReason(reply.getReason());
+            applicationRepository.save(app);
+            
+            // Gửi Command hoàn trả slot lại cho Job Service (qua Outbox)
+            try {
+                ReleaseJobSlotCommand command = new ReleaseJobSlotCommand(app.getId(), app.getJobId());
+                String payload = objectMapper.writeValueAsString(command);
+                
+                OutboxEvent outboxEvent = OutboxEvent.create("Application", app.getId(), "ReleaseJobSlotCommand", payload);
+                outboxRepository.save(outboxEvent);
+            } catch (Exception e) {
+                // Xử lý lỗi serialize
+            }
+        }
+    }
+}</code></pre>
+
+  <h3>6.2. Các Service thành phần chỉ làm Worker</h3>
+  <p>Với Orchestration, <code>job-service</code> và <code>cv-parser-service</code> không cần biết quy trình tổng thể. Chúng chỉ đơn giản là nhận Command -> Thực hiện -> Trả Reply.</p>
+  
+  <div class="filename">JobCommandHandler.java (Thư mục: job-service/src/.../infrastructure/messaging)</div>
+  <pre><code>package com.talenthub.job.infrastructure.messaging;
+
+import com.talenthub.job.application.JobService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class JobCommandHandler {
+
+    private final JobService jobService;
+    private final RabbitTemplate rabbitTemplate;
+
+    @RabbitListener(queues = "command.job.reserve.queue")
+    public void handleReserveCommand(ReserveJobSlotCommand command) {
+        try {
+            boolean success = jobService.reserveSlot(command.getJobId());
+            JobReservationReply reply = new JobReservationReply(command.getApplicationId(), success, success ? null : "JOB_FULL");
+            rabbitTemplate.convertAndSend("talenthub.direct", "reply.job.reserve", reply);
+        } catch (Exception e) {
+            JobReservationReply reply = new JobReservationReply(command.getApplicationId(), false, e.getMessage());
+            rabbitTemplate.convertAndSend("talenthub.direct", "reply.job.reserve", reply);
+        }
+    }
+
+    @RabbitListener(queues = "command.job.release.queue")
+    public void handleReleaseCommand(ReleaseJobSlotCommand command) {
+        // Thực thi Compensation: Trả lại slot
+        jobService.releaseSlot(command.getJobId());
+        // Không cần reply cho compensation trừ khi hệ thống yêu cầu quản lý retry khắt khe
+    }
+}</code></pre>
+
+
+  <!-- ============================================================ -->
+  <h2 id="s7"><span class="section-num">07</span>Phân tích chuyên sâu: Choreography vs Orchestration</h2>
+  
+  <p>Dựa trên việc cài đặt 2 mô hình trên cho cùng một kịch bản, dưới đây là phân tích lợi ích và bất lợi dưới góc độ thiết kế hệ thống.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tiêu chí</th>
+        <th>Choreography (Biên đạo múa)</th>
+        <th>Orchestration (Nhạc trưởng)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Độ phức tạp (Coupling)</strong></td>
+        <td><strong>Thấp (Loose Coupling).</strong> Các service không biết về nhau, chỉ lắng nghe event. <code>job-service</code> không cần quan tâm ai bắn ra <code>ApplicationCreated</code>.</td>
+        <td><strong>Cao hơn.</strong> Orchestrator cần biết tất cả các Commands và sự tồn tại của các participant trong quy trình.</td>
+      </tr>
+      <tr>
+        <td><strong>Khả năng theo dõi (Observability)</strong></td>
+        <td><strong>Rất khó.</strong> Không có nơi nào chứa toàn bộ quy trình. Bạn phải mở code của 4 service ra đọc để hiểu luồng chạy từ đầu đến cuối như thế nào.</td>
+        <td><strong>Cực kỳ dễ.</strong> Chỉ cần mở class <code>ApplicationSagaOrchestrator</code> là có thể nhìn thấy toàn bộ business flow, state machine, và compensation logic.</td>
+      </tr>
+      <tr>
+        <td><strong>Phát triển tính năng mới</strong></td>
+        <td><strong>Dễ dàng thêm side-effect.</strong> Ví dụ muốn thêm bước tính điểm sau khi parse CV, chỉ việc tạo service mới lắng nghe <code>CVParsedEvent</code> mà không cần sửa code cũ.</td>
+        <td><strong>Phải sửa Orchestrator.</strong> Nếu thêm bước, bạn bắt buộc phải sửa class Orchestrator để thêm Command/Reply mới vào state machine.</td>
+      </tr>
+      <tr>
+        <td><strong>Xử lý Compensation (Rollback)</strong></td>
+        <td><strong>Dễ dính Cyclic Dependency.</strong> Các service bắn event chéo nhau rất dễ gây lỗi vòng lặp. Việc undo ở bước 4 sẽ lan truyền rất rắc rối.</td>
+        <td><strong>Mạch lạc.</strong> Orchestrator giữ quyền chủ động. Nếu bước 4 lỗi, Orchestrator sẽ ra lệnh undo ngược lại từ 3 -> 2 -> 1 một cách tuyến tính.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout success">
+    <div class="callout-label">Góc nhìn Senior Tech Leader (Khuyến nghị)</div>
+    <p>
+      - <strong>Choreography</strong> cực kỳ tuyệt vời cho các quy trình ngắn (2-3 bước) và không có quá nhiều kịch bản rẽ nhánh hoặc compensation phức tạp. Khởi đầu bằng Choreography giúp hệ thống decoupled.<br>
+      - Tuy nhiên, <strong>khi số lượng service trong luồng &gt; 3, hoặc business flow có nhiều nhánh rẽ, compensation ngược xuôi (như kịch bản TalentHub trên), HÃY CHỌN ORCHESTRATION</strong>. Việc maintain một Choreography Saga phức tạp sẽ trở thành thảm họa debug (gọi là "event spaghetti"). Orchestration tuy tập trung logic (centralized) nhưng mang lại khả năng quản trị state rõ ràng, thứ cực kỳ thiết yếu cho các Domain Core.
+    </p>
+  </div>
+
+
+  <!-- ============================================================ -->
+  <h2 id="s8"><span class="section-num">08</span>Tóm tắt và câu hỏi ôn tập</h2>
+
+  <h3>Tóm tắt</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Khái niệm</th>
+        <th>Nội dung chính</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Saga Pattern</td>
+        <td>Chuỗi local transaction, mỗi bước có compensating transaction tương ứng.</td>
+      </tr>
+      <tr>
+        <td>Choreography</td>
+        <td>Không có coordinator; service giao tiếp bằng chuỗi phản ứng dây chuyền qua Event. Dễ mở rộng nhưng khó debug.</td>
+      </tr>
+      <tr>
+        <td>Orchestration</td>
+        <td>Có Saga Orchestrator trung tâm điều phối qua Command/Reply. Logic tập trung, dễ debug, quản lý state tốt nhưng Coupling cao hơn.</td>
+      </tr>
+      <tr>
+        <td>Compensating Transaction</td>
+        <td>Thao tác ngược (Ví dụ: Giảm lại Slot) để hoàn tác tác động của bước đã commit khi luồng thất bại.</td>
+      </tr>
+      <tr>
+        <td>Outbox Pattern</td>
+        <td>Giải quyết vấn đề Dual-Write bằng cách lưu Message vào cùng Database Transaction với Domain Entity, sau đó gửi đi bằng một Background Job.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Tài liệu tham khảo</h3>
+
+  <ol class="ref-list">
+    <li>Richardson, C. (2018). <em>Microservices Patterns</em>, Ch. 4: Managing transactions with sagas. Manning. <a href="https://microservices.io/patterns/data/saga.html" target="_blank">microservices.io/patterns/data/saga.html</a></li>
+    <li>Newman, S. (2021). <em>Building Microservices</em>, 2nd ed., Ch. 6: Workflow (Sagas). O'Reilly.</li>
+    <li>Baeldung: Saga Pattern in Microservices. <a href="https://www.baeldung.com/cs/saga-pattern-microservices" target="_blank">baeldung.com/cs/saga-pattern-microservices</a></li>
+  </ol>
+
+  <footer class="doc-footer">
+    <span>MSS301 - FPT University</span>
+    <span>Chapter 13, Part 3/3</span>
+  </footer>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
+</body>
+</html>

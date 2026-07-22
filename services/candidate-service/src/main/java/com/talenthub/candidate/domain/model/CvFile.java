@@ -46,7 +46,7 @@ public class CvFile extends BaseEntity {
     @Column(name = "parse_status", nullable = false, length = 20)
     private ParseStatus parseStatus;
 
-    static CvFile create(UUID candidateId, String fileUrl, long sizeBytes) {
+    public static CvFile create(UUID candidateId, String fileUrl, long sizeBytes) {
         if (candidateId == null) {
             throw new IllegalArgumentException("candidateId required");
         }

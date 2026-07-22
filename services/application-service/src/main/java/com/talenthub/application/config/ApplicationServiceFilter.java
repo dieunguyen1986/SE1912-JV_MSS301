@@ -33,6 +33,13 @@ public class ApplicationServiceFilter extends OncePerRequestFilter {
         String rolesAsString = request.getHeader(Constants.HEADER_USER_ROLES);
         log.info("userId = {}, roles = {}", userId, rolesAsString);
 
+        // Nếu không có header (request không qua Gateway, health check, actuator...),
+        // bỏ qua authentication và tiếp tục filter chain
+        if (userId == null || rolesAsString == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         List<GrantedAuthority> grantedAuthorities = Arrays.stream(rolesAsString.split(","))
                 .map((role) -> new SimpleGrantedAuthority(role)).collect(Collectors.toList());
         log.info("grantedAuthorities = {}", grantedAuthorities);

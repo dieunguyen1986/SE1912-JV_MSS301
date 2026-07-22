@@ -3,17 +3,6 @@ server:
 spring:
   application:
     name: cv-parser-service
-  # Kết nối PostgreSQL (notification-db)
-  datasource:
-    url: jdbc:postgresql://notification-db:5432/talenthub_cv_dbs
-    username: dieunt
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: update    # dev only
-    properties:
-      hibernate:
-        format_sql: true
 
   # Kết nối RabbitMQ
   rabbitmq:
@@ -23,29 +12,14 @@ spring:
     password: talenthub
     listener:
       simple:
-        # Khi message xử lý fail, không tự động re-queue lại đầu queue.
-        # Thay vào đó, message sẽ được route vào DLQ
         default-requeue-rejected: false
-        # Consumer xử lý 1 message tại 1 thời điểm
         prefetch: 1
         retry:
-          # Bật retry với exponential backoff (BRULE-15)
           enabled: true
-          initial-interval: 1000    # retry lần 1 sau 1 giây
-          multiplier: 2.0           # lần 2 sau 2s, lần 3 sau 4s
-          max-attempts: 3           # tối đa 3 lần thử
-          max-interval: 10000       # không chờ quá 10 giây
-
-  # Cấu hình SMTP gửi email tới MailHog
-  mail:
-    host: localhost           # Docker profile sẽ override thành "mailhog"
-    port: 1025                # MailHog SMTP port
-    properties:
-      mail:
-        smtp:
-          auth: false          # MailHog không yêu cầu xác thực
-          starttls:
-            enable: false      # MailHog không dùng TLS
+          initial-interval: 1000
+          multiplier: 2.0
+          max-attempts: 3
+          max-interval: 10000
 
 # Eureka client
 eureka:

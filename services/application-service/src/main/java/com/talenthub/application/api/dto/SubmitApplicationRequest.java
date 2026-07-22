@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public record SubmitApplicationRequest(
         @NotNull UUID candidateId,
-        @NotNull UUID jobId
+        @NotNull UUID jobId,
+        @NotNull String cvFileUrl
 ) {}
