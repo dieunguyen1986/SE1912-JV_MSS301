@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-/** UC-02.7b — Filter Kanban by Job (và/hoặc theo stage). */
+/** UC-02.7b - Filter Kanban by Job (và/hoặc theo stage). */
 @Service
 @RequiredArgsConstructor
 public class ListApplicationsUseCase {

@@ -3,8 +3,8 @@ package com.talenthub.candidate.domain.model;
 import java.time.LocalDate;
 
 /**
- * Value Object — kinh nghiệm làm việc.
- * to = null → đang làm hiện tại.
+ * Value Object - kinh nghiệm làm việc.
+ * to = null nghĩa là đang làm hiện tại.
  */
 public record WorkExperience(
         String company,

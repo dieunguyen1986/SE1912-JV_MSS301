@@ -43,7 +43,6 @@ public class EvaluationNote {
             throw new IllegalArgumentException("content must not be blank");
         }
         EvaluationNote note = new EvaluationNote();
-        note.id = UUID.randomUUID();
         note.author = author.trim();
         note.content = content.trim();
         note.stage = stage;

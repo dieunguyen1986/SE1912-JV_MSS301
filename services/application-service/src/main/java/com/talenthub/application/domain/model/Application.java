@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Aggregate Root: vòng đời 1 đơn ứng tuyển + state machine pipeline (BRULE-12).
+ * Aggregate Root - vòng đời 1 đơn ứng tuyển + state machine pipeline (BRULE-12).
  */
 @Getter
 @Entity
@@ -50,7 +50,7 @@ public class Application extends BaseEntity {
      * Note đánh giá của Recruiter/HM qua từng stage.
      */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id")
+    @JoinColumn(name = "application_id", nullable = false)
     private List<EvaluationNote> notes = new ArrayList<>();
 
     /**
@@ -72,7 +72,7 @@ public class Application extends BaseEntity {
     // ---------------------------------------------------------------------
 
     /**
-     * Tạo đơn mới — luôn bắt đầu ở stage NEW.
+     * Tạo đơn mới - luôn bắt đầu ở stage NEW.
      */
     public static Application submit(UUID candidateId, UUID jobId) {
         if (candidateId == null || jobId == null) {
@@ -115,7 +115,7 @@ public class Application extends BaseEntity {
     }
 
     /**
-     * Đặt lịch phỏng vấn — chỉ hợp lệ khi đang ở giai đoạn sàng lọc / phỏng vấn kỹ thuật (chuyên môn).
+     * Đặt lịch phỏng vấn - chỉ hợp lệ khi đang ở giai đoạn sàng lọc / phỏng vấn kỹ thuật (chuyên môn).
      */
     public void scheduleInterview(LocalDateTime when, String interviewerName) {
         if (currentStage != PipelineStage.CV_SCREENING
@@ -136,7 +136,7 @@ public class Application extends BaseEntity {
     }
 
     /**
-     * Gửi offer — phải qua vòng HM rồi mới được offer; tự động chuyển sang OFFERED.
+     * Gửi offer - phải qua vòng HM rồi mới được offer; tự động chuyển sang OFFERED.
      */
     public void extendOffer(BigDecimal salary, LocalDate startDate) {
         if (currentStage != PipelineStage.INTERVIEW_HM) {
@@ -147,7 +147,7 @@ public class Application extends BaseEntity {
     }
 
     /**
-     * Ứng viên chấp nhận offer → HIRED.
+     * Ứng viên chấp nhận offer thành công chuyển sang trạng thái HIRED.
      */
     public void acceptOffer() {
         if (offer == null) {
@@ -158,7 +158,7 @@ public class Application extends BaseEntity {
     }
 
     /**
-     * Ứng viên từ chối offer → OFFER_DECLINED.
+     * Ứng viên từ chối offer chuyển sang trạng thái OFFER_DECLINED.
      */
     public void declineOffer() {
         if (offer == null) {

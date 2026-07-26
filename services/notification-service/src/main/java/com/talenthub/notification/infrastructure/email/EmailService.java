@@ -54,7 +54,7 @@ public class EmailService {
     }
 
     /**
-     * Case 2: Hết slot — số lượng ứng viên đã đạt tối đa.
+     * Case 2: Hết slot - số lượng ứng viên đã đạt tối đa.
      * Gửi khi job-service reject vì applicantCount > maxApplicants (job.slot.rejected).
      */
     public void sendSlotFullRejection(String toEmail, String candidateName, String reason) {

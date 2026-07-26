@@ -15,7 +15,7 @@ import java.util.UUID;
 
 /**
  * View đầy đủ của 1 Application trả ra ngoài (đọc qua aggregate root).
- * Không expose entity JPA trực tiếp — map sang DTO bất biến.
+ * Không expose entity JPA trực tiếp - map sang DTO bất biến.
  */
 public record ApplicationResponse(
         UUID id,

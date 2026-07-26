@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Gửi offer cho ứng viên đã qua vòng HM → chuyển stage sang OFFERED. */
+/** Gửi offer cho ứng viên đã qua vòng HM và chuyển trạng thái sang OFFERED. */
 @Service
 @RequiredArgsConstructor
 public class ExtendOfferUseCase {

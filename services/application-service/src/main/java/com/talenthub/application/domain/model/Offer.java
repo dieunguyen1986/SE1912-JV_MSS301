@@ -47,7 +47,6 @@ public class Offer {
             throw new IllegalArgumentException("startDate phải ở tương lai");
         }
         Offer o = new Offer();
-        o.id = UUID.randomUUID();
         o.salary = salary;
         o.startDate = startDate;
         o.status = Status.EXTENDED;

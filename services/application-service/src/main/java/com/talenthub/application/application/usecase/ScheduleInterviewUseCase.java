@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** UC-02.11 / UC-02.15 — Schedule Technical / HM Interview. */
+/** UC-02.11 / UC-02.15 - Schedule Technical / HM Interview. */
 @Service
 @RequiredArgsConstructor
 public class ScheduleInterviewUseCase {

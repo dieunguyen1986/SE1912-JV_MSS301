@@ -43,7 +43,7 @@ public class JobAggregate {
         job.maxSalary = maxSalary;
         job.deadline = deadline;
         job.status = Status.DRAFT;
-        job.maxApplicants = maxApplicants;
+        job.maxApplicants = maxApplicants != null ? maxApplicants : 0;
         job.applicantCount = 0;
         return job;
     }

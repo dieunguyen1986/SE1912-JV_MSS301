@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** UC-02.8 — Add Evaluation Notes (gắn vào stage hiện tại). */
+/** UC-02.8 - Add Evaluation Notes (gắn vào stage hiện tại). */
 @Service
 @RequiredArgsConstructor
 public class AddEvaluationNoteUseCase {

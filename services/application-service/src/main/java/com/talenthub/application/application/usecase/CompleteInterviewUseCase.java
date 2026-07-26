@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** UC-02.12 — Import / record Interview Results. */
+/** UC-02.12 - Import / record Interview Results. */
 @Service
 @RequiredArgsConstructor
 public class CompleteInterviewUseCase {

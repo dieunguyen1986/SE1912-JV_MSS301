@@ -3,8 +3,8 @@ package com.talenthub.candidate.domain.model;
 import java.time.Year;
 
 /**
- * Value Object — học vấn.
- * Lưu trong ParsedCvData (List<Education>) — không phải @Embeddable đơn lẻ.
+ * Value Object - học vấn.
+ * Lưu trong ParsedCvData (List<Education>) - không phải @Embeddable đơn lẻ.
  */
 public record Education(
         String school,

@@ -27,7 +27,7 @@ public class ApplicationController {
     private final GetApplicationUseCase getUseCase;
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_CANDIDATE')")
+    @PreAuthorize("hasAuthority('ROLE_CANDIDATE')")
     public ResponseEntity<Map<String, UUID>> submit(@Valid @RequestBody SubmitApplicationRequest req) {
         UUID applicationId = submitUseCase.execute(new SubmitApplicationCommand(req.candidateId(), req.jobId(), req.cvFileUrl()));
 

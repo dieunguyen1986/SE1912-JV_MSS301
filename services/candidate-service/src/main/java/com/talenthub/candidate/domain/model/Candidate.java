@@ -12,10 +12,10 @@ import org.hibernate.type.SqlTypes;
 import java.util.UUID;
 
 /**
- * Aggregate Root — hồ sơ ứng viên.
- * - Tham chiếu Job/Application bằng ID (ko thông qua object)
- * - ContactInfo: @Embedded (nhúng vào bảng candidates).
- * - CvFile: Entity con (sub-entity) — cascade theo Candidate.
+ * Aggregate Root - hồ sơ ứng viên.
+ * BRULE-11: Quản lý tính nhất quán cho CvFile, ContactInfo...
+ * - ContactInfo: Value object nhúng thẳng bảng candidates.
+ * - CvFile: Entity con (sub-entity) - cascade theo Candidate.
  * - ParsedCvData: VO lưu dạng JSON (jsonb trên Postgres).
  */
 @Getter

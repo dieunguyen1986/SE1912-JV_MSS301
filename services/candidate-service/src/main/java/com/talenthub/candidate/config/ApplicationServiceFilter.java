@@ -41,7 +41,13 @@ public class ApplicationServiceFilter extends OncePerRequestFilter {
         }
 
         List<GrantedAuthority> grantedAuthorities = Arrays.stream(rolesAsString.split(","))
-                .map((role) -> new SimpleGrantedAuthority(role)).collect(Collectors.toList());
+                .map(role -> {
+                    String r = role.trim();
+                    if (!r.startsWith("ROLE_")) {
+                        r = "ROLE_" + r;
+                    }
+                    return new SimpleGrantedAuthority(r);
+                }).collect(Collectors.toList());
         log.info("grantedAuthorities = {}", grantedAuthorities);
         // Add user to context
         UsernamePasswordAuthenticationToken authenticationToken =

@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-/** UC-02.18 — Update Offer Status: ứng viên ACCEPT → HIRED, hoặc DECLINE → OFFER_DECLINED. */
+/** UC-02.18 Cập nhật trạng thái Offer: ứng viên ACCEPT chuyển sang HIRED, hoặc DECLINE chuyển sang OFFER_DECLINED. */
 @Service
 @RequiredArgsConstructor
 public class DecideOfferUseCase {

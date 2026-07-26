@@ -3,7 +3,7 @@ package com.talenthub.candidate.domain.model;
 import java.util.List;
 
 /**
- * Value Object — kết quả parse CV (từ cv-parser-service trả về).
+ * Value Object - kết quả parse CV (từ cv-parser-service trả về).
  * Defensive copy 3 List qua List.copyOf() để giữ immutability.
  */
 public record ParsedCvData(

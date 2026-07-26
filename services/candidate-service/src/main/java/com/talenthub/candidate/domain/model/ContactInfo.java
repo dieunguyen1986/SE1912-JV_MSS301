@@ -4,7 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 /**
- * Value Object — thông tin liên hệ của Candidate.
+ * Value Object - thông tin liên hệ của Candidate.
  * Dùng @Embeddable để nhúng thẳng vào bảng candidates (không tạo bảng riêng).
  */
 @Embeddable

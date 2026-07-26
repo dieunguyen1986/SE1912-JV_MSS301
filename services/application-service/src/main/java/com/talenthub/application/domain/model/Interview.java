@@ -45,7 +45,6 @@ public class Interview {
             throw new IllegalArgumentException("interviewerName must not be blank");
         }
         Interview i = new Interview();
-        i.id = UUID.randomUUID();
         i.scheduledAt = when;
         i.interviewerName = interviewerName.trim();
         i.status = Status.SCHEDULED;

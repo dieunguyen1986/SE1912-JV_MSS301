@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -40,6 +41,7 @@ public class JobController {
     private final DeleteJobUseCase deleteJobUseCase;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER')")
     public ResponseEntity<JobResponse> create(@Valid @RequestBody JobCreateRequest request) {
         UUID id = createNewJobUseCase.execute(toCommand(request));
         JobAggregate job = getJobByIdUseCase.execute(id);
@@ -77,6 +79,7 @@ public class JobController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER')")
     public JobResponse update(@PathVariable UUID id, @Valid @RequestBody JobUpdateRequest request) {
         JobCommand command = new JobCommand(
                 request.getTitle(), request.getDescription(), request.getDepartmentId(),
@@ -86,6 +89,7 @@ public class JobController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER')")
     public void delete(@PathVariable UUID id) {
         deleteJobUseCase.execute(id);
     }

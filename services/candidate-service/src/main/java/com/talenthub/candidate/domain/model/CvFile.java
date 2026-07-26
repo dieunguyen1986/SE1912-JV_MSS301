@@ -10,9 +10,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Entity con của Candidate aggregate — metadata file CV đã upload.
+ * Entity con của Candidate aggregate - metadata file CV đã upload.
  * Sống/chết theo Candidate cha (không có CvFileRepository riêng).
- * Factory `create(...)` để package-private — chỉ Candidate aggregate được tạo.
+ * Factory `create(...)` để package-private - chỉ Candidate aggregate được tạo.
  */
 @Getter
 @Entity
